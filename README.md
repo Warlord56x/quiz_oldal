@@ -1,1 +1,3 @@
-README PLS PLS
+Xampp + php + oracledb 12c
+Oracle Instant Client
+Localhost database -en dolgozik dockerben.

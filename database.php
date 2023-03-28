@@ -18,8 +18,9 @@ function get_all_quiz(): array
 
 function get_quiz_questions($quiz):array {
     global $conn;
-    $sql = "SELECT KERDES.KERDES FROM KERDES INNER JOIN QUIZ Q on Q.QUIZ_ID = KERDES.QUIZ_ID WHERE Q.QUIZ_NEV = '".$quiz."'";
+    $sql = "SELECT KERDES.KERDES FROM KERDES INNER JOIN QUIZ Q on Q.QUIZ_ID = KERDES.QUIZ_ID WHERE Q.QUIZ_NEV = :quiz";
     $stid = oci_parse($conn,$sql);
+    oci_bind_by_name($stid, ':quiz', $quiz);
     oci_execute($stid);
     $result = array();
     while (($row = oci_fetch_array($stid, OCI_NUM)) !== false) {
@@ -30,14 +31,14 @@ function get_quiz_questions($quiz):array {
 
 function getQuizList($category) {
     global $conn;
-// Prepare the function call
+    // Prepare the function call
     $sql = 'BEGIN :result := QuizKeres(:category); END;';
     $stmt = oci_parse($conn, $sql);
 
-// Bind the input parameter
+    // Bind the input parameter
     oci_bind_by_name($stmt, ':category', $category);
 
-// Bind the output parameter
+    // Bind the output parameter
     oci_bind_by_name($stmt, ':result', $result, 4000);
     oci_execute($stmt);
     oci_free_statement($stmt);
@@ -45,27 +46,41 @@ function getQuizList($category) {
     return $result;
 }
 
-function login($email, $jelszo) {
+function login($email, $jelszo):bool {
     global $conn;
-    $jelszo = md5($jelszo);
-// Prepare the function call
-    $sql = 'BEGIN :result := QuizKeres(:category); END;';
+    $sql = "SELECT JELSZO FROM FELHASZNALO WHERE EMAIL = :email";
+    $stmt = oci_parse($conn, $sql);
+    oci_bind_by_name($stmt, ":email", $email);
+    oci_execute($stmt);
+    $result  = oci_fetch_array($stmt);
+
+    if (!$result || !isset($result["JELSZO"])) {
+        // Nincs felhasznalo.
+        return false;
+    }
+
+    return password_verify($jelszo ,$result["JELSZO"]);
+}
+
+function register($email, $jelszo, $vez, $kereszt, $eletkor):bool {
+    global $conn;
+    $sql = 'BEGIN :result := REGISTER(:email, :jelszo, :vez, :kereszt, :eletkor); END;';
     $stmt = oci_parse($conn, $sql);
 
-// Bind the input parameter
+    // Bind the input parameter
+    $jelszo_hash = password_hash($jelszo, PASSWORD_BCRYPT);
     oci_bind_by_name($stmt, ':email', $email);
-    oci_bind_by_name($stmt, ':jelszo', $jelszo);
+    oci_bind_by_name($stmt, ':jelszo', $jelszo_hash);
+    oci_bind_by_name($stmt, ':vez', $vez);
+    oci_bind_by_name($stmt, ':kereszt', $kereszt);
+    oci_bind_by_name($stmt, ':eletkor', $eletkor);
 
-// Bind the output parameter
-    oci_bind_by_name($stmt, ':result', $result, 4000);
+    // Bind the output parameter
+    $result = 0;
+    oci_bind_by_name($stmt, ':result', $result);
     oci_execute($stmt);
     oci_free_statement($stmt);
-
-    return $result;
+    return $result === 1;
 }
 
 
-
-
-
-?>
