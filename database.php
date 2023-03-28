@@ -29,6 +29,29 @@ function get_quiz_questions($quiz):array {
     return $result;
 }
 
+function get_quiz_questions_answers($quiz):array {
+    global $conn;
+    $sql = "SELECT K.KERDES, (K.JO_VALASZ || ', ' ||
+        LISTAGG(R.ROSSZ_VALASZ, ', ') WITHIN GROUP (ORDER BY R.ROSSZ_VALASZ)) AS VALASZOK
+        FROM ROSSZVALASZ R
+        INNER JOIN KERDES K ON K.KERDES_ID = R.KERDES_ID
+        INNER JOIN QUIZ Q ON Q.QUIZ_ID = K.QUIZ_ID
+        WHERE Q.QUIZ_NEV = :quiz
+        GROUP BY K.KERDES, K.JO_VALASZ";
+    $stid = oci_parse($conn,$sql);
+    oci_bind_by_name($stid, ':quiz', $quiz);
+    oci_execute($stid);
+    $result = array();
+    while (($row = oci_fetch_array($stid, OCI_NUM)) !== false) {
+        $result[] = $row;
+    }
+    for($i = 0; $i < count($result); $i++) {
+        $result[$i][] = explode(', ', $result[$i][1]);
+    }
+    //print_r($result[0][2]);
+    return $result;
+}
+
 function getQuizList($category) {
     global $conn;
     // Prepare the function call

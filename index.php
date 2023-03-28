@@ -39,8 +39,7 @@ include_once "nav.php";
 
     <div class="container">
         <div class="row justify-content-center">
-            <?php
-            for($i = 0; $i < count($quizes); $i++) { ?>
+            <?php for($i = 0; $i < count($quizes); $i++) { ?>
                 <div class="col-auto me-1 card bg-dark m-3">
                     <div class="card-body text-center">
                         <a class="stretched-link" href="<?php echo 'kitolt.php?quiz=' . $quizes[$i]; ?>"></a>

@@ -5,7 +5,7 @@ include "database.php";
 
 $quizes_kerdes = null;
 if (isset($_GET["quiz"]) and $_GET["quiz"] !== "") {
-    $quizes_kerdes = get_quiz_questions($_GET["quiz"]);
+    $quizes_kerdes = get_quiz_questions_answers($_GET["quiz"]);
 }
 
 
@@ -29,17 +29,25 @@ if (isset($_GET["quiz"]) and $_GET["quiz"] !== "") {
 <?php include_once "nav.php"; ?>
 
 <?php if (isset($_GET["quiz"])) {?>
-        <h1><?php echo $_GET["quiz"]; ?></h1>
+    <h2 class="text-center m-4"><?php echo $_GET["quiz"]; ?></h2>
     <div class="container">
         <div class="row justify-content-center">
             <?php
             for($i = 0; $i < count($quizes_kerdes); $i++) { ?>
                 <div class="col-auto me-1 card bg-dark m-3">
                     <div class="card-body text-center">
-                        <a class="stretched-link" href="<?php echo 'kitolt.php?quiz=' . $quizes_kerdes[$i]; ?>"></a>
-                        <h5 class="card-title h5 "><?php echo $quizes_kerdes[$i] ?></h5>
+                        <a class="stretched-link" href="<?php echo 'kitolt.php?quiz=' . $quizes_kerdes[$i][0]; ?>"></a>
+                        <h5 class="card-title h5 "><?php echo $quizes_kerdes[$i][0] ?></h5>
                     </div>
                 </div>
+                <?php for($j = 0; $j < count($quizes_kerdes[$i][2]); $j++) { ?>
+                <div class="col-auto me-1 card bg-dark m-3">
+                    <div class="card-body text-center">
+                        <a class="stretched-link" href="<?php echo 'kitolt.php?quiz=' . $quizes_kerdes[$i][0]; ?>"></a>
+                        <h5 class="card-title h5 "><?php echo $quizes_kerdes[$i][2][$j] ?></h5>
+                    </div>
+                </div>
+            <?php }?>
             <?php }?>
         </div>
     </div>
