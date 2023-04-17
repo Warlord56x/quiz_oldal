@@ -1,5 +1,10 @@
+<?php
+$err = isset($_SESSION["error"]) && count($_SESSION["error"]) !== 1;
+$errLogin = $err && end($_SESSION["error"]) === "Login error";
+$errRegist = $err && end($_SESSION["error"]) === "Regist error";
+?>
 <header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -39,19 +44,20 @@
     </nav>
 </header>
 
-<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+<div class="offcanvas <?php if ($errLogin || $errRegist) {echo "show";}?> offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasRightLabel">Bejelentkezés</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
-    <div class="offcanvas-body text-dark">
+    <div class="offcanvas-body">
         <form action="index.php" method="post">
-            <div class="text-bg-dark">
+            <div>
                 <p>
                     <?php
-                    if (isset($_SESSION["error"]) && $_SESSION["error"] !== "")
+                    if ($errLogin)
                     {
                         foreach ($_SESSION["error"] as $item) {
+                            if ($item === end($_SESSION["error"])) {break;}
                             echo $item;
                         }
                     }
@@ -59,24 +65,25 @@
                 </p>
             </div>
             <div class="form-floating">
-                <input class="form-control" required type="email" id="email" name="email" placeholder="E-mail"/>
-                <label for="email">E-mail</label>
+                <input class="form-control <?php if ($errLogin) {echo "is-invalid";}?>" required type="email" id="regemail" name="email" placeholder="E-mail"/>
+                <label for="regemail">E-mail</label>
             </div>
             <div class="form-floating">
-                <input class="form-control" required type="password" id="pswd" name="pswd" placeholder="Password"/>
-                <label for="pswd">Password</label>
+                <input class="form-control <?php if ($errLogin) {echo "is-invalid";}?>" required type="password" id="regpswd" name="pswd" placeholder="Password"/>
+                <label for="regpswd">Password</label>
             </div>
             <div class="text-center m-3">
                 <button type="submit" class="btn btn-primary" name="login">Bejelentkezés</button>
             </div>
         </form>
         <form action="index.php" method="post">
-            <div class="text-bg-dark">
+            <div>
                 <p>
                     <?php
-                    if (isset($_SESSION["error"]) && $_SESSION["error"] !== "")
+                    if ($errRegist)
                     {
                         foreach ($_SESSION["error"] as $item) {
+                            if ($item === end($_SESSION["error"])) {break;}
                             echo $item;
                         }
                     }
@@ -84,23 +91,23 @@
                 </p>
             </div>
             <div class="form-floating">
-                <input class="form-control" type="email" required id="email" name="email" placeholder="E-mail"/>
+                <input class="form-control <?php if ($errRegist) {echo "is-invalid";}?>" type="email" required id="email" name="email" placeholder="E-mail"/>
                 <label for="email">E-mail</label>
             </div>
             <div class="form-floating">
-                <input class="form-control" type="password" required id="pswd" name="pswd" placeholder="Jelszó"/>
+                <input class="form-control <?php if ($errRegist) {echo "is-invalid";}?>" type="password" required id="pswd" name="pswd" placeholder="Jelszó"/>
                 <label for="pswd">Jelszó</label>
             </div>
             <div class="form-floating">
-                <input class="form-control" type="text" required id="vez" name="vez" placeholder="Vezeték név"/>
+                <input class="form-control <?php if ($errRegist) {echo "is-invalid";}?>" type="text" required id="vez" name="vez" placeholder="Vezeték név"/>
                 <label for="vez">Vezeték név</label>
             </div>
             <div class="form-floating">
-                <input class="form-control" type="text" required id="ker" name="ker" placeholder="Kereszt név"/>
+                <input class="form-control <?php if ($errRegist) {echo "is-invalid";}?>" type="text" required id="ker" name="ker" placeholder="Kereszt név"/>
                 <label for="ker">Kereszt név</label>
             </div>
             <div class="form-floating">
-                <input class="form-control" type="number" required id="kor" name="kor" placeholder="Életkor"/>
+                <input class="form-control <?php if ($errRegist) {echo "is-invalid";}?>" type="number" required id="kor" name="kor" placeholder="Életkor"/>
                 <label for="kor">Életkor</label>
             </div>
             <div class="text-center m-3">

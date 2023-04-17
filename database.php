@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 $tns = "localhost/XE";
 
@@ -16,7 +17,7 @@ function get_all_quiz(): array
     return $result;
 }
 
-function get_quiz_questions($quiz):array {
+function get_quiz_questions(string $quiz):array {
     global $conn;
     $sql = "SELECT KERDES.KERDES FROM KERDES INNER JOIN QUIZ Q on Q.QUIZ_ID = KERDES.QUIZ_ID WHERE Q.QUIZ_NEV = :quiz";
     $stid = oci_parse($conn,$sql);
@@ -26,10 +27,11 @@ function get_quiz_questions($quiz):array {
     while (($row = oci_fetch_array($stid, OCI_NUM)) !== false) {
         $result[] = $row[0];
     }
+    oci_free_statement($stid);
     return $result;
 }
 
-function get_quiz_questions_answers($quiz):array {
+function get_quiz_questions_answers(string $quiz):array {
     global $conn;
     $sql = "SELECT K.KERDES, (K.JO_VALASZ || ', ' ||
         LISTAGG(R.ROSSZ_VALASZ, ', ') WITHIN GROUP (ORDER BY R.ROSSZ_VALASZ)) AS VALASZOK
@@ -49,33 +51,54 @@ function get_quiz_questions_answers($quiz):array {
         $result[$i][] = explode(', ', $result[$i][1]);
     }
     //print_r($result[0][2]);
+    oci_free_statement($stid);
     return $result;
 }
 
-function getQuizList($category) {
+function get_quiz_list(string $category):array {
     global $conn;
     // Prepare the function call
-    $sql = 'BEGIN :result := QuizKeres(:category); END;';
+    $sql = 'BEGIN :cursor := QUIZKERES(:category); END;';
     $stmt = oci_parse($conn, $sql);
 
     // Bind the input parameter
     oci_bind_by_name($stmt, ':category', $category);
 
     // Bind the output parameter
-    oci_bind_by_name($stmt, ':result', $result, 4000);
+    $cursor = oci_new_cursor($conn);
+    oci_bind_by_name($stmt, ':cursor', $cursor, -1, OCI_B_CURSOR);
+
     oci_execute($stmt);
+    oci_execute($cursor);
+
+    $result = [];
+    oci_fetch_all($cursor, $result, 0, -1, OCI_FETCHSTATEMENT_BY_COLUMN);
+
     oci_free_statement($stmt);
+    oci_free_cursor($cursor);
 
     return $result;
 }
 
-function login($email, $jelszo):bool {
+function check_answer(string $kerdes, string $valasz):bool {
+    global $conn;
+    $sql = "SELECT * FROM KERDES WHERE kerdes = :kerdes AND jo_valasz = :valasz";
+    $stmt = oci_parse($conn, $sql);
+
+    oci_bind_by_name($stmt, ":kerdes", $kerdes);
+    oci_bind_by_name($stmt, ":valasz", $valasz);
+
+    oci_execute($stmt);
+    return oci_fetch($stmt);
+}
+
+function login(string $email, string $jelszo):bool {
     global $conn;
     $sql = "SELECT JELSZO FROM FELHASZNALO WHERE EMAIL = :email";
     $stmt = oci_parse($conn, $sql);
     oci_bind_by_name($stmt, ":email", $email);
     oci_execute($stmt);
-    $result  = oci_fetch_array($stmt);
+    $result = oci_fetch_array($stmt);
 
     if (!$result || !isset($result["JELSZO"])) {
         // Nincs felhasznalo.
@@ -85,7 +108,7 @@ function login($email, $jelszo):bool {
     return password_verify($jelszo ,$result["JELSZO"]);
 }
 
-function register($email, $jelszo, $vez, $kereszt, $eletkor):bool {
+function register(string $email, string $jelszo, string $vez, string $kereszt, string $eletkor):bool {
     global $conn;
     $sql = 'BEGIN :result := REGISTER(:email, :jelszo, :vez, :kereszt, :eletkor); END;';
     $stmt = oci_parse($conn, $sql);

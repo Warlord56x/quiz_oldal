@@ -1,5 +1,5 @@
 <?php
-$error = array();
+global $error;
 
 if (isset($_POST["login"])) {
     if (!isset($_POST["pswd"]) || trim($_POST["pswd"]) === "") {
@@ -16,7 +16,6 @@ if (isset($_POST["login"])) {
             $error[] = "Hibás jelszó, email páros";
         }
     }
+    $error[] = "Login error";
 }
-if (count($error) > 0) {
-    $_SESSION["error"] = $error;
-}
+$_SESSION["error"] = $error;

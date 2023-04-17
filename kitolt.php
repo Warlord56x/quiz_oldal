@@ -4,55 +4,123 @@ session_start();
 include "database.php";
 
 $quizes_kerdes = null;
-if (isset($_GET["quiz"]) and $_GET["quiz"] !== "") {
+$quiz_nev = null;
+if (isset($_GET["quiz"]) && $_GET["quiz"] !== "") {
     $quizes_kerdes = get_quiz_questions_answers($_GET["quiz"]);
+    $quiz_nev = $_GET["quiz"];
+}
+if (isset($_POST["quiz"]) && $_POST["quiz"] !== "") {
+    $quizes_kerdes = get_quiz_questions_answers($_POST["quiz"]);
+    $quiz_nev = $_POST["quiz"];
 }
 
+$checking = array();
+$valasz = null;
+if (isset($_POST["fill"])) {
+    for($i = 0; $i < count($quizes_kerdes); $i++) {
+        $kerdes = $quizes_kerdes[$i][0];
+        $valasz = $_POST[str_replace(" ", "_",$quizes_kerdes[$i][0])];
+        $result = check_answer($kerdes, $valasz);
 
+        $checking[] = [$valasz, $result];
+    }
+}
 ?>
 
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="hu" data-bs-theme="dark">
 <head>
-    <title>Főoldal</title>
+    <?php if ((isset($_GET["quiz"]) && $_GET['quiz'] !== "") || (isset($_POST["quiz"]) && $_POST["quiz"] !== "")) {?>
+        <title><?php echo $quiz_nev; ?></title>
+    <?php } else { ?>
+        <title>No page</title>
+    <?php } ?>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
 </head>
 <body class="bg-black text-white">
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1/dist/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js" integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 
 <?php include_once "nav.php"; ?>
 
-<?php if (isset($_GET["quiz"])) {?>
-    <h2 class="text-center m-4"><?php echo $_GET["quiz"]; ?></h2>
-    <div class="container">
-        <div class="row justify-content-center">
-            <?php
-            for($i = 0; $i < count($quizes_kerdes); $i++) { ?>
-                <div class="col-auto me-1 card bg-dark m-3">
-                    <div class="card-body text-center">
-                        <a class="stretched-link" href="<?php echo 'kitolt.php?quiz=' . $quizes_kerdes[$i][0]; ?>"></a>
-                        <h5 class="card-title h5 "><?php echo $quizes_kerdes[$i][0] ?></h5>
+<?php if ((isset($_GET["quiz"]) && $_GET['quiz'] !== "") || (isset($_POST["quiz"]) && $_POST["quiz"] !== "")) {?>
+    <h2 class="text-center m-4"><?php echo $quiz_nev; ?></h2>
+    <form class="container" action="kitolt.php" method="post">
+        <?php
+        for($i = 0; $i < count($quizes_kerdes); $i++) {
+
+            if (isset($_POST["fill"])) {
+                $valasz = $checking[$i][0];
+                $check = $checking[$i][1];
+            }
+        ?>
+            <div class="row justify-content-center">
+                <div class="col-sm card mb-3 <?php
+                if (count($checking) !== 0 && $check === true) {
+                    echo "border-success";
+                } elseif (isset($_POST["fill"])) {
+                    echo "border-danger";
+                }
+                ?>">
+                    <div class="card-body <?php
+                    if (count($checking) !== 0 && $check === true) {
+                        echo "text-success";
+                    } elseif (isset($_POST["fill"])) {
+                        echo "text-danger";
+                    }
+                    ?>">
+                        <h5 class="card-title h5 "><?php echo $quizes_kerdes[$i][0];?></h5>
+
+                        <div class="form-check">
+                            <input
+                                class="form-check-input"
+                                value="default-void"
+                                type="radio"
+                                <?php
+                                if ($valasz === "default-void" || !isset($_POST["fill"])) {
+                                    echo "checked";
+                                }
+                                ?>
+                                name="<?php echo $quizes_kerdes[$i][0];?>"
+                                id="<?php echo $i;?>-default-void-label"
+                            >
+                            <label class="form-check-label" for="<?php echo $i;?>-default-void-label">
+                                nincs válasz
+                            </label>
+                        </div>
+
+                        <?php for($j = 0; $j < count($quizes_kerdes[$i][2]); $j++) { ?>
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input"
+                                    value="<?php echo $quizes_kerdes[$i][2][$j];?>"
+                                    type="radio"
+                                    <?php
+                                    if ($valasz !== null && $valasz === $quizes_kerdes[$i][2][$j]) {
+                                        echo "checked";
+                                    }
+                                    ?>
+                                    name="<?php echo $quizes_kerdes[$i][0];?>"
+                                    id="<?php echo $j . $i;?>-label"
+                                >
+                                <label class="form-check-label" for="<?php echo $j . $i;?>-label">
+                                    <?php echo $quizes_kerdes[$i][2][$j];?>
+                                </label>
+                            </div>
+                        <?php }?>
                     </div>
                 </div>
-                <?php for($j = 0; $j < count($quizes_kerdes[$i][2]); $j++) { ?>
-                <div class="col-auto me-1 card bg-dark m-3">
-                    <div class="card-body text-center">
-                        <a class="stretched-link" href="<?php echo 'kitolt.php?quiz=' . $quizes_kerdes[$i][0]; ?>"></a>
-                        <h5 class="card-title h5 "><?php echo $quizes_kerdes[$i][2][$j] ?></h5>
-                    </div>
-                </div>
+            </div>
             <?php }?>
-            <?php }?>
-        </div>
-    </div>
+        <input type="hidden" name="quiz" value="<?php echo $quiz_nev; ?>">
+        <button type="submit" class="btn btn-primary mb-3" name="fill">Kitöltés befejezése.</button>
+    </form>
 <?php } else { ?>
-    <h1>ACTION NOT PERMITTED.</h1>
+    <h1 class="text-center m-4" >MŰVELET NEM VÉGRE HAJTHATÓ.</h1>
 <?php } ?>
 </body>
 </html>

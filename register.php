@@ -1,5 +1,5 @@
 <?php
-$error = array();
+global $error;
 
 if (isset($_POST["register"])) {
     if (!isset($_POST["pswd"]) || trim($_POST["pswd"]) === "") {
@@ -24,7 +24,6 @@ if (isset($_POST["register"])) {
             $error[] = "A megadott e-mail címen már létezik egy felhasználó";
         }
     }
+    $error[] = "Regist error";
 }
-if (count($error) > 0) {
-    $_SESSION["error"] = $error;
-}
+$_SESSION["error"] = $error;
