@@ -17,9 +17,11 @@ if (isset($_POST["register"])) {
     if (!isset($_POST["kor"]) || trim($_POST["kor"]) === "") {
         $error[] = "Életkor megadása kötelező";
     }
-    if (count($error) == 0) {
-        if (register($_POST["email"], $_POST["pswd"], $_POST["vez"], $_POST["ker"], $_POST["kor"])) {
-            $_SESSION["felhasznalo"] = true;
+    if (count($error) === 0) {
+        $regist_result = register($_POST["email"], $_POST["pswd"], $_POST["vez"], $_POST["ker"], $_POST["kor"]);
+        if ($regist_result) {
+            $felh = login($_POST["email"], $_POST["pswd"]);
+            $_SESSION["felhasznalo"] = $felh;
         } else {
             $error[] = "A megadott e-mail címen már létezik egy felhasználó";
         }

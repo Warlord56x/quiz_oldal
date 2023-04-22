@@ -45,7 +45,9 @@ if (isset($_POST["fill"])) {
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js" integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 
-<?php include_once "nav.php"; ?>
+<?php
+include_once "nav.php";
+?>
 
 <?php if ((isset($_GET["quiz"]) && $_GET['quiz'] !== "") || (isset($_POST["quiz"]) && $_POST["quiz"] !== "")) {?>
     <h2 class="text-center m-4"><?php echo $quiz_nev; ?></h2>
@@ -60,14 +62,14 @@ if (isset($_POST["fill"])) {
         ?>
             <div class="row justify-content-center">
                 <div class="col-sm card mb-3 <?php
-                if (count($checking) !== 0 && $check === true) {
+                if (count($checking) !== 0 && (isset($check) && $check === true)) {
                     echo "border-success";
                 } elseif (isset($_POST["fill"])) {
                     echo "border-danger";
                 }
                 ?>">
                     <div class="card-body <?php
-                    if (count($checking) !== 0 && $check === true) {
+                    if (count($checking) !== 0 && (isset($check) && $check === true)) {
                         echo "text-success";
                     } elseif (isset($_POST["fill"])) {
                         echo "text-danger";

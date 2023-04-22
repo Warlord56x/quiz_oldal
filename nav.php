@@ -1,7 +1,15 @@
 <?php
+
+// Moved this here, should've done this sooner.
+include_once "login.php";
+include_once "register.php";
+
 $err = isset($_SESSION["error"]) && count($_SESSION["error"]) !== 1;
 $errLogin = $err && end($_SESSION["error"]) === "Login error";
 $errRegist = $err && end($_SESSION["error"]) === "Regist error";
+if (isset($_SESSION["error"]) && count($_SESSION["error"]) > 0) {
+    array_pop($_SESSION["error"]);
+}
 ?>
 <header>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
@@ -12,31 +20,41 @@ $errRegist = $err && end($_SESSION["error"]) === "Regist error";
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="index.php">Főoldal</a>
+                        <a class="nav-link active" aria-current="page" href="index.php">
+                            <i class="bi-house" style="font-size: 1.2rem;"></i>
+                            Főoldal
+                        </a>
                     </li>
-                    <?php if (isset($_SESSION["admin"])) {?>
+                    <?php if (isset($_SESSION["felhasznalo"])) {?>
                         <li class="nav-item">
-                            <a class="nav-link" aria-current="page" href="admin.php">Admin</a>
+                            <a class="nav-link active" aria-current="page" href="keszit.php">
+                                Quiz készítés
+                            </a>
                         </li>
-                    <?php } ?>
+                    <?php }?>
                 </ul>
                 <?php if (isset($_SESSION["felhasznalo"])) {?>
-                    <ul class="navbar-nav justify-content-end">
-                        <li class="nav-item">
-                            <a class="nav-link" href="logout.php">Kijelentkezés</a>
-                        </li>
-                    </ul>
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi-person-circle" style="font-size: 1.2rem;"></i>
+                            Saját Fiók
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="profile.php">Fiók beállítások</a></li>
+                            <li><a class="dropdown-item" href="logout.php">Kijelentkezés</a></li>
+                        </ul>
+                    </div>
                 <?php } else { ?>
                     <ul class="navbar-nav justify-content-end">
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="offcanvas" href="#offcanvasRight" role="button" aria-controls="offcanvasRight">
-                                Bejelentkezés
+                                Bejelentkezés/Regisztráció
                             </a>
                         </li>
                     </ul>
                 <?php } ?>
                 <form class="d-flex" role="search" method="get" action="index.php">
-                    <input class="form-control me-2" type="text" placeholder="Kategória" name="category" aria-label="Search">
+                    <input class="form-control me-2" type="text" placeholder="Kategória" name="category" aria-label="Search" <?php if (isset($_GET["category"]) and $_GET["category"] !== "") {$_a = $_GET["category"];  echo "value='$_a'";} ?> >
                     <button class="btn btn-outline-success" type="submit">Keresés</button>
                 </form>
             </div>
@@ -57,7 +75,6 @@ $errRegist = $err && end($_SESSION["error"]) === "Regist error";
                     if ($errLogin)
                     {
                         foreach ($_SESSION["error"] as $item) {
-                            if ($item === end($_SESSION["error"])) {break;}
                             echo $item;
                         }
                     }
@@ -83,7 +100,6 @@ $errRegist = $err && end($_SESSION["error"]) === "Regist error";
                     if ($errRegist)
                     {
                         foreach ($_SESSION["error"] as $item) {
-                            if ($item === end($_SESSION["error"])) {break;}
                             echo $item;
                         }
                     }
