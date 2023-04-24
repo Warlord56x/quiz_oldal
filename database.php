@@ -236,5 +236,59 @@ function edit_account(Account $account, string $email = "", string $firstname = 
     oci_free_statement($stid);
 
     return true;
-
 }
+
+
+function create_quiz(Account $account, string $quiz_name):void
+{
+    global $conn;
+    $sql = "SELECT FELHASZNALO_ID FROM FELHASZNALO WHERE EMAIL=:email";
+    $stid = oci_parse($conn,$sql);
+
+    $email1 = $account->getEmail();
+    oci_bind_by_name($stid, ":email", $email1);
+    oci_execute($stid);
+
+    $account_id = intval(oci_fetch_array($stid)["FELHASZNALO_ID"]);
+    oci_free_statement($stid);
+
+    $sql = "INSERT INTO QUIZ VALUES(SEQ_QUIZ.NEXTVAL, :qname, :r, :k)";
+    $stid = oci_parse($conn,$sql);
+
+    $r = 0;
+    $k = 0;
+    oci_bind_by_name($stid, ":qname", $quiz_name);
+    oci_bind_by_name($stid, ":r", $r);
+    oci_bind_by_name($stid, ":k", $k);
+    oci_execute($stid);
+    oci_free_statement($stid);
+
+    $sql = "INSERT INTO KESZIT VALUES(:felh, SEQ_QUIZ.CURRVAL, TRUNC(SYSDATE))";
+    $stid = oci_parse($conn,$sql);
+
+    oci_bind_by_name($stid, ":felh", $account_id);
+    oci_execute($stid);
+    oci_free_statement($stid);
+}
+
+function create_question(string $question, string $jo_valasz):void {
+    global $conn;
+    $sql = "INSERT INTO KERDES VALUES(SEQ_KERDES.NEXTVAL, SEQ_QUIZ.CURRVAL, :kerdes, :jo_valasz)";
+    $stid = oci_parse($conn,$sql);
+
+    oci_bind_by_name($stid, ":kerdes", $question);
+    oci_bind_by_name($stid, ":jo_valasz", $jo_valasz);
+    oci_execute($stid);
+    oci_free_statement($stid);
+}
+
+function create_valasz(string $valasz):void {
+    global $conn;
+    $sql = "INSERT INTO ROSSZVALASZ VALUES(SEQ_KERDES.NEXTVAL,:valasz)";
+    $stid = oci_parse($conn,$sql);
+
+    oci_bind_by_name($stid, ":valasz", $valasz);
+    oci_execute($stid);
+    oci_free_statement($stid);
+}
+
