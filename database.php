@@ -85,7 +85,7 @@ function check_answer(string $kerdes, string $valasz):bool {
     return oci_fetch($stmt);
 }
 
-function login(string $email, string $jelszo):Account|null {
+function login(string $email, string $jelszo):Account {
     global $conn;
     $sql = "SELECT * FROM FELHASZNALO WHERE EMAIL = :email";
     $stmt = oci_parse($conn, $sql);
@@ -97,7 +97,7 @@ function login(string $email, string $jelszo):Account|null {
 
     if (!$result || !isset($result["JELSZO"])) {
         // Nincs felhasznalo.
-        return null;
+        return new Account();
     }
 
     if (password_verify($jelszo ,$result["JELSZO"])) {
@@ -109,7 +109,7 @@ function login(string $email, string $jelszo):Account|null {
             intval($result["OSSZPONTSZAM"])
         );
     } else {
-        return null;
+        return new Account();
     }
 }
 
@@ -136,9 +136,9 @@ function register(string $email, string $jelszo, string $vez, string $kereszt, s
 }
 
 // Change password, based on account email, if valid
-function change_password(Account $account, string $old_pswd , string $new_pswd):bool|array {
+function change_password(Account $account, string $old_pswd , string $new_pswd):array {
     global $conn;
-    $error = null;
+    $error = array();
     $sql = "SELECT JELSZO FROM FELHASZNALO WHERE EMAIL = :email";
     $stmt = oci_parse($conn, $sql);
 
@@ -183,7 +183,7 @@ function change_password(Account $account, string $old_pswd , string $new_pswd):
     oci_execute($stmt);
     oci_free_statement($stmt);
 
-    return true;
+    return $error;
 }
 
 function edit_account(Account $account, string $email = "", string $firstname = "", string $lastname = "", int $age = 0):bool {

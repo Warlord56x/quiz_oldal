@@ -93,7 +93,7 @@ include_once "nav.php";
 
                 <p class="text-danger">
                 <?php
-                    if (gettype($account_error) === "array") {
+                    if (count($account_error) > 0) {
                         foreach ($account_error as $item) {
                             echo "$item\n";
                         }
