@@ -22,25 +22,32 @@ if (isset($_POST["quiz_keszit"])) {
     $jo_valaszok = array();
     $kerdesek = array();
     foreach ($valasz_size as $index => $key) {
-        $valaszok[] = $_POST[$index . "_valasz" . $key];
+        for ($j = 1; $j <= $key; $j++) {
+            $valaszok[] = $_POST[$index . "_valasz" . $j];
+        }
+
     }
     for ($i = 1; $i <= intval($kerdes_size); $i++) {
         $kerdesek[] = $_POST["qname".$i];
         $jo_valaszok[] = $valaszok[$_POST[$i."radio"]-1];
-        unset($valaszok[$_POST[$i."radio"]-1]);
-        $valaszok = array_values($valaszok);
     }
-
-    print_r($_POST);
-    print_r($jo_valaszok);
+    print_r($_POST); echo "<br>";
+    print_r($jo_valaszok);echo "<br>";
+    print_r($valaszok);echo "<br>";
 
     create_quiz($account, $_POST["quiz_name"]);
 
     foreach ($kerdesek as $index => $item) {
+        echo $index; echo "<br>";
+        echo $item; echo "<br>";
         create_question($item, $jo_valaszok[$index]);
+        echo "create";
     }
     foreach ($valaszok as $item) {
-        create_valasz($item);
+        if (in_array($item, $jo_valaszok)) {
+            continue;
+        }
+        create_valasz($item, $kerdesek[0]);
     }
 
 }

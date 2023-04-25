@@ -32,6 +32,13 @@ if (isset($_SESSION["error"]) && count($_SESSION["error"]) > 0) {
                             </a>
                         </li>
                     <?php }?>
+                    <?php if (isset($_SESSION["felhasznalo"])) {?>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="modosit.php">
+                                Quiz módosítás
+                            </a>
+                        </li>
+                    <?php }?>
                 </ul>
                 <?php if (isset($_SESSION["felhasznalo"])) {?>
                     <div class="dropdown">

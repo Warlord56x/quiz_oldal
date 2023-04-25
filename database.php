@@ -282,12 +282,35 @@ function create_question(string $question, string $jo_valasz):void {
     oci_free_statement($stid);
 }
 
-function create_valasz(string $valasz):void {
+function create_valasz(string $valasz, string $qstring):void {
     global $conn;
-    $sql = "INSERT INTO ROSSZVALASZ VALUES(SEQ_KERDES.NEXTVAL,:valasz)";
+    $sql = "SELECT KERDES_ID FROM KERDES WHERE KERDES = :qstring";
     $stid = oci_parse($conn,$sql);
 
+    oci_bind_by_name($stid, ":qstring", $qstring);
+    oci_execute($stid);
+    $id = intval(oci_fetch_array($stid)["KERDES_ID"]);
+    oci_free_statement($stid);
+
+    echo $id;
+    echo $qstring;
+
+
+    $sql = "INSERT INTO ROSSZVALASZ VALUES(:id,:valasz)";
+    $stid = oci_parse($conn,$sql);
+
+    oci_bind_by_name($stid, ":id", $id);
     oci_bind_by_name($stid, ":valasz", $valasz);
+    oci_execute($stid);
+    oci_free_statement($stid);
+}
+
+function delete_quiz(string $qname):void {
+    global $conn;
+    $sql = "DELETE FROM QUIZ WHERE QUIZ_NEV = :qname";
+    $stid = oci_parse($conn,$sql);
+
+    oci_bind_by_name($stid, ":qname", $qname);
     oci_execute($stid);
     oci_free_statement($stid);
 }
