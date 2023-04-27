@@ -21,6 +21,26 @@ function get_all_quiz(): array
     return $result;
 }
 
+function get_my_quizes(Account $account): array
+{
+    global $conn;
+    $sql = "SELECT quiz_nev FROM Quiz
+    inner join KESZIT K on QUIZ.QUIZ_ID = K.QUIZ_ID
+    inner join FELHASZNALO F on F.FELHASZNALO_ID = K.FELHASZNALO_ID
+    where f.FELHASZNALO_ID = :id";
+
+    $stid = oci_parse($conn, $sql);
+    $id = $account->getId();
+    oci_bind_by_name($stid, ':id', $id);
+    oci_execute($stid);
+    print_r(oci_error($stid));
+    $result = array();
+    while (($row = oci_fetch_array($stid, OCI_NUM)) !== false) {
+        $result[] = $row[0];
+    }
+    return $result;
+}
+
 function get_quiz_questions_answers(string $quiz):array {
     global $conn;
     $sql = "SELECT K.KERDES, (K.JO_VALASZ || ', ' ||
@@ -102,6 +122,7 @@ function login(string $email, string $jelszo):Account {
 
     if (password_verify($jelszo ,$result["JELSZO"])) {
         return new Account(
+            intval($result["FELHASZNALO_ID"]),
             $result["EMAIL"],
             $result["KERESZTNEV"],
             $result["VEZETEKNEV"],

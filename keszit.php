@@ -23,13 +23,14 @@ if (isset($_POST["quiz_keszit"])) {
     $kerdesek = array();
     foreach ($valasz_size as $index => $key) {
         for ($j = 1; $j <= $key; $j++) {
-            $valaszok[] = $_POST[$index . "_valasz" . $j];
+
+            $valaszok[$_POST["qname".intval($index)]][] = $_POST[$index . "_valasz" . $j];
         }
 
     }
     for ($i = 1; $i <= intval($kerdes_size); $i++) {
         $kerdesek[] = $_POST["qname".$i];
-        $jo_valaszok[] = $valaszok[$_POST[$i."radio"]-1];
+        $jo_valaszok[] = $valaszok[$_POST["qname".$i]][$_POST[$i."radio"]-1];
     }
     print_r($_POST); echo "<br>";
     print_r($jo_valaszok);echo "<br>";
@@ -38,16 +39,20 @@ if (isset($_POST["quiz_keszit"])) {
     create_quiz($account, $_POST["quiz_name"]);
 
     foreach ($kerdesek as $index => $item) {
-        echo $index; echo "<br>";
-        echo $item; echo "<br>";
+        //echo $index; echo "<br>";
+        //echo $item; echo "<br>";
         create_question($item, $jo_valaszok[$index]);
-        echo "create";
     }
-    foreach ($valaszok as $item) {
-        if (in_array($item, $jo_valaszok)) {
-            continue;
+    foreach ($valaszok as $kerdes_osztas) {
+        print_r($kerdes_osztas); echo "<br>";
+        foreach ($kerdes_osztas as $index => $item) {
+            if (in_array($item, $jo_valaszok)) {
+                continue;
+            }
+            create_valasz($item, $_POST["qname".($index+1)]);
+            echo $index; echo "<br>";
+            echo $item; echo "<br>";
         }
-        create_valasz($item, $kerdesek[0]);
     }
 
 }
@@ -113,20 +118,14 @@ include_once "nav.php";
         const clone = valasz.cloneNode(true);
         clone.innerHTML = `
     <div class="input-group">
-        <span class="input-group-text">1. Válasz</span>
+        <span class="input-group-text">`+valaszok[kerdes+'kerdes'] + '. Válasz'+`</span>
         <div class="input-group-text gap-2">
             <input class="form-check-input mt-0" type="radio" name="`+kerdes+`radio" value="`+valaszok[kerdes+'kerdes']+`">
             <label class="form-check-label" for="radio">Helyes válasz</label>
         </div>
-        <input type="text" class="form-control" name="1kerdes_valasz1" aria-label="Text input with radio button">
+        <input type="text" class="form-control" name="`+kerdes+'kerdes_valasz' + valaszok[kerdes+'kerdes']+`" aria-label="Text input with radio button">
     </div>
 `;
-
-        const lastInput = clone.querySelector('input[type="text"]');
-        lastInput.name = kerdes+'kerdes_valasz' + valaszok[kerdes+'kerdes'];
-
-        const span = clone.querySelector('span.input-group-text');
-        span.textContent = valaszok[kerdes+'kerdes'] + '. Válasz';
 
         valasz_list.append(clone);
         update_counts();

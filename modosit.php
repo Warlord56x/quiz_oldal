@@ -12,10 +12,11 @@ if (!isset($_SESSION["felhasznalo"])) {
 
 $account = $_SESSION["felhasznalo"];
 
-$quizes = get_all_quiz();
+$quizes = get_my_quizes($account);
 
-if ($_GET["quiz"])
+if (isset($_GET["quiz"])) {
     delete_quiz($_GET["quiz"]);
+}
 ?>
 
 <!DOCTYPE html>

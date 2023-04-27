@@ -1,18 +1,29 @@
 <?php
 class Account {
+    private int $id;
     private string $email;
     private string $firstName;
     private string $lastName;
     private int $age;
     private int $overallScore;
-    private int $id;
 
-    public function __construct(string $email = "", string $firstName = "", string $lastName = "", int $age = 0, int $overallScore = 0) {
+    public function __construct(int $id = 0, string $email = "", string $firstName = "", string $lastName = "", int $age = 0, int $overallScore = 0) {
+        $this->id = $id;
         $this->email = $email;
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->age = $age;
         $this->overallScore = $overallScore;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function setId(int $id): void
+    {
+        $this->id = $id;
     }
 
     public function getEmail(): string {
