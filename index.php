@@ -5,11 +5,17 @@ include "database.php";
 $error = array();
 
 $quizes = null;
+$quizes_ids = null;
+$temp = null;
 if (isset($_GET["category"]) and $_GET["category"] !== "") {
-    $quizes = get_quiz_list($_GET["category"])['QUIZ_NEV'];
+    $temp = get_quiz_list($_GET["category"]);
 } else {
-    $quizes = get_all_quiz();
+    $temp = get_all_quiz();
+    //print_r($temp);
 }
+$quizes = $temp["QUIZ_NEV"];
+$quizes_ids = $temp["QUIZ_ID"];
+
 ?>
 
 <!DOCTYPE html>
@@ -39,7 +45,7 @@ include_once "nav.php";
             <?php for($i = 0; $i < count($quizes); $i++) { ?>
                 <div class="col-auto me-1 card m-3">
                     <div class="card-body text-center">
-                        <a class="stretched-link" href="<?php echo 'kitolt.php?quiz=' . $quizes[$i]; ?>"></a>
+                        <a class="stretched-link" href="<?php echo 'kitolt.php?quiz='.$quizes_ids[$i].'&qname='.$quizes[$i]; ?>"></a>
                         <h5 class="card-title h5 "><?php echo $quizes[$i] ?></h5>
                     </div>
                 </div>
@@ -56,7 +62,7 @@ include_once "nav.php";
             for($i = 0; $i < count($quizes); $i++) { ?>
                 <div class="col-auto me-1 card m-3">
                     <div class="card-body text-center">
-                        <a class="stretched-link" href="<?php echo 'kitolt.php?quiz=' . $quizes[$i]; ?>"></a>
+                        <a class="stretched-link" href="<?php echo 'kitolt.php?quiz=' . $quizes_ids[$i]; ?>"></a>
                         <h5 class="card-title h5 "><?php echo $quizes[$i] ?></h5>
                     </div>
                 </div>

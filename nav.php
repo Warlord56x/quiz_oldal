@@ -25,6 +25,11 @@ if (isset($_SESSION["error"]) && count($_SESSION["error"]) > 0) {
                             Főoldal
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="rangsor.php">
+                            Rangsor
+                        </a>
+                    </li>
                     <?php if (isset($_SESSION["felhasznalo"])) {?>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="keszit.php">

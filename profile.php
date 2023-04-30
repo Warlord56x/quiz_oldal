@@ -12,6 +12,10 @@ if (!isset($_SESSION["felhasznalo"])) {
 
 $account = $_SESSION["felhasznalo"];
 
+if (isset($_POST["delete"])) {
+    delete_account($account);
+}
+
 if (isset($_POST["pswd_update"])) {
     $account_error = change_password($account, $_POST["pswd_current"], $_POST["pswd_new"]);
 }
@@ -42,7 +46,7 @@ include_once "nav.php";
 ?>
 
 <div class="container justify-content-center mt-4">
-    <div class="row row-cols-md-3">
+    <div class="row row-cols-md-3 mb-3">
         <div class="card col text-center">
             <i class="bi bi-person-circle" style="font-size: 24rem"></i>
             <ul class="list-group list-group-flush">
@@ -142,6 +146,9 @@ include_once "nav.php";
             </div>
         </form>
     </div>
+    <form action="profile.php" method="post">
+        <button type="submit" class="btn btn-danger" name="delete">Fiók Törlése</button>
+    </form>
 </div>
 </body>
 </html>

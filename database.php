@@ -12,19 +12,18 @@ $conn = oci_connect('USERDANI', 'dummy', $tns,'UTF8');
 function get_all_quiz(): array
 {
     global $conn;
-    $stid = oci_parse($conn, 'SELECT quiz_nev FROM Quiz');
+    $stid = oci_parse($conn, 'SELECT quiz_nev, quiz_id FROM Quiz');
     oci_execute($stid);
     $result = array();
-    while (($row = oci_fetch_array($stid, OCI_NUM)) !== false) {
-        $result[] = $row[0];
-    }
+    oci_fetch_all($stid, $result);
+
     return $result;
 }
 
 function get_my_quizes(Account $account): array
 {
     global $conn;
-    $sql = "SELECT quiz_nev FROM Quiz
+    $sql = "SELECT quiz_nev, QUIZ.quiz_id FROM Quiz
     inner join KESZIT K on QUIZ.QUIZ_ID = K.QUIZ_ID
     inner join FELHASZNALO F on F.FELHASZNALO_ID = K.FELHASZNALO_ID
     where f.FELHASZNALO_ID = :id";
@@ -35,23 +34,25 @@ function get_my_quizes(Account $account): array
     oci_execute($stid);
     print_r(oci_error($stid));
     $result = array();
-    while (($row = oci_fetch_array($stid, OCI_NUM)) !== false) {
-        $result[] = $row[0];
-    }
+    oci_fetch_all($stid, $result);
     return $result;
 }
 
-function get_quiz_questions_answers(string $quiz):array {
+
+
+function get_quiz_questions_answers(int $quiz_id): array {
     global $conn;
-    $sql = "SELECT K.KERDES, (K.JO_VALASZ || ', ' ||
-        LISTAGG(R.ROSSZ_VALASZ, ', ') WITHIN GROUP (ORDER BY R.ROSSZ_VALASZ)) AS VALASZOK
+    $sql = "
+        SELECT K.KERDES, (K.JO_VALASZ || ', ' ||
+            LISTAGG(R.ROSSZ_VALASZ, ', ') WITHIN GROUP (ORDER BY R.ROSSZ_VALASZ)) AS VALASZOK
         FROM ROSSZVALASZ R
-        INNER JOIN KERDES K ON K.KERDES_ID = R.KERDES_ID
-        INNER JOIN QUIZ Q ON Q.QUIZ_ID = K.QUIZ_ID
-        WHERE Q.QUIZ_NEV = :quiz
-        GROUP BY K.KERDES, K.JO_VALASZ";
+            INNER JOIN KERDES K ON K.KERDES_ID = R.KERDES_ID
+            INNER JOIN QUIZ Q ON Q.QUIZ_ID = K.QUIZ_ID
+        WHERE Q.QUIZ_ID = :quiz
+        GROUP BY K.KERDES, K.JO_VALASZ
+        ";
     $stid = oci_parse($conn,$sql);
-    oci_bind_by_name($stid, ':quiz', $quiz);
+    oci_bind_by_name($stid, ':quiz', $quiz_id);
     oci_execute($stid);
     $result = array();
     while (($row = oci_fetch_array($stid, OCI_NUM)) !== false) {
@@ -60,12 +61,10 @@ function get_quiz_questions_answers(string $quiz):array {
     for($i = 0; $i < count($result); $i++) {
         $result[$i][] = explode(', ', $result[$i][1]);
     }
-
-    oci_free_statement($stid);
     return $result;
 }
 
-function get_quiz_list(string $category = ""):array {
+function get_quiz_list(string $category = ""): array {
     global $conn;
     // Prepare the function call
     $sql = 'BEGIN :cursor := QUIZKERES(:category); END;';
@@ -84,7 +83,7 @@ function get_quiz_list(string $category = ""):array {
     oci_execute($cursor);
 
     $result = [];
-    oci_fetch_all($cursor, $result, 0, -1, OCI_FETCHSTATEMENT_BY_COLUMN);
+    oci_fetch_all($cursor, $result);
 
     oci_free_statement($stmt);
     oci_free_cursor($cursor);
@@ -92,7 +91,7 @@ function get_quiz_list(string $category = ""):array {
     return $result;
 }
 
-function check_answer(string $kerdes, string $valasz):bool {
+function check_answer(string $kerdes, string $valasz): bool {
     global $conn;
     $sql = "SELECT * FROM KERDES WHERE kerdes = :kerdes AND jo_valasz = :valasz";
     $stmt = oci_parse($conn, $sql);
@@ -134,7 +133,7 @@ function login(string $email, string $jelszo):Account {
     }
 }
 
-function register(string $email, string $jelszo, string $vez, string $kereszt, string $eletkor):bool {
+function register(string $email, string $jelszo, string $vez, string $kereszt, string $eletkor): bool {
     global $conn;
     // Succes gives 1 otherwise 0
     $sql = 'BEGIN :result := REGISTER(:email, :jelszo, :vez, :kereszt, :eletkor); END;';
@@ -157,7 +156,7 @@ function register(string $email, string $jelszo, string $vez, string $kereszt, s
 }
 
 // Change password, based on account email, if valid
-function change_password(Account $account, string $old_pswd , string $new_pswd):array {
+function change_password(Account $account, string $old_pswd , string $new_pswd): array {
     global $conn;
     $error = array();
     $sql = "SELECT JELSZO FROM FELHASZNALO WHERE EMAIL = :email";
@@ -207,15 +206,14 @@ function change_password(Account $account, string $old_pswd , string $new_pswd):
     return $error;
 }
 
-function edit_account(Account $account, string $email = "", string $firstname = "", string $lastname = "", int $age = 0):bool {
+function edit_account(Account $account,
+                      string $email = "",
+                      string $firstname = "",
+                      string $lastname = "",
+                      int $age = 0): bool {
     $edit = array();
 
     global $conn;
-    $sql = "SELECT FELHASZNALO_ID FROM FELHASZNALO WHERE EMAIL=:email";
-    $stid = oci_parse($conn,$sql);
-    $email1 = $account->getEmail();
-    oci_bind_by_name($stid, ":email", $email1);
-    oci_execute($stid);
 
     if ($email !== "") {
         $account->setEmail($email);
@@ -234,8 +232,7 @@ function edit_account(Account $account, string $email = "", string $firstname = 
     $edit[] = $account->getFirstName();
     $edit[] = $account->getLastName();
     $edit[] = $account->getAge();
-    $edit[] = intval(oci_fetch_array($stid)["FELHASZNALO_ID"]);
-    oci_free_statement($stid);
+    $edit[] = $account->getId();
 
     $sql = "UPDATE FELHASZNALO SET
             EMAIL = :edit0,
@@ -244,7 +241,6 @@ function edit_account(Account $account, string $email = "", string $firstname = 
             ELETKOR = :edit3
             WHERE FELHASZNALO_ID = :edit4";
     $stid = oci_parse($conn,$sql);
-    //var_dump($edit);
 
     oci_bind_by_name($stid, ":edit0", $edit[0]);
     oci_bind_by_name($stid, ":edit1", $edit[1]);
@@ -260,19 +256,11 @@ function edit_account(Account $account, string $email = "", string $firstname = 
 }
 
 
-function create_quiz(Account $account, string $quiz_name):void
+function create_quiz(Account $account, string $quiz_name): void
 {
     global $conn;
-    $sql = "SELECT FELHASZNALO_ID FROM FELHASZNALO WHERE EMAIL=:email";
-    $stid = oci_parse($conn,$sql);
 
-    $email1 = $account->getEmail();
-    oci_bind_by_name($stid, ":email", $email1);
-    oci_execute($stid);
-
-    $account_id = intval(oci_fetch_array($stid)["FELHASZNALO_ID"]);
-    oci_free_statement($stid);
-
+    $account_id = $account->getId();
     $sql = "INSERT INTO QUIZ VALUES(SEQ_QUIZ.NEXTVAL, :qname, :r, :k)";
     $stid = oci_parse($conn,$sql);
 
@@ -292,7 +280,7 @@ function create_quiz(Account $account, string $quiz_name):void
     oci_free_statement($stid);
 }
 
-function create_question(string $question, string $jo_valasz):void {
+function create_question(string $question, string $jo_valasz): void {
     global $conn;
     $sql = "INSERT INTO KERDES VALUES(SEQ_KERDES.NEXTVAL, SEQ_QUIZ.CURRVAL, :kerdes, :jo_valasz)";
     $stid = oci_parse($conn,$sql);
@@ -303,7 +291,7 @@ function create_question(string $question, string $jo_valasz):void {
     oci_free_statement($stid);
 }
 
-function create_valasz(string $valasz, string $qstring):void {
+function create_valasz(string $valasz, string $qstring): void {
     global $conn;
     $sql = "SELECT KERDES_ID FROM KERDES WHERE KERDES = :qstring";
     $stid = oci_parse($conn,$sql);
@@ -312,10 +300,6 @@ function create_valasz(string $valasz, string $qstring):void {
     oci_execute($stid);
     $id = intval(oci_fetch_array($stid)["KERDES_ID"]);
     oci_free_statement($stid);
-
-    echo $id;
-    echo $qstring;
-
 
     $sql = "INSERT INTO ROSSZVALASZ VALUES(:id,:valasz)";
     $stid = oci_parse($conn,$sql);
@@ -326,13 +310,166 @@ function create_valasz(string $valasz, string $qstring):void {
     oci_free_statement($stid);
 }
 
-function delete_quiz(string $qname):void {
+function update_quiz(string $qname, int $qid): void {
     global $conn;
-    $sql = "DELETE FROM QUIZ WHERE QUIZ_NEV = :qname";
+
+    $sql = "UPDATE QUIZ SET QUIZ_NEV = :qname WHERE QUIZ_ID = :qid";
     $stid = oci_parse($conn,$sql);
 
     oci_bind_by_name($stid, ":qname", $qname);
+    oci_bind_by_name($stid, ":qid", $qid);
     oci_execute($stid);
     oci_free_statement($stid);
+}
+
+function update_question(int $qid, string $question, string $jo_valasz, string $question_old): void {
+    global $conn;
+    $sql = "UPDATE KERDES SET KERDES = :kerdes, JO_VALASZ = :jo_valasz
+            WHERE QUIZ_ID = :qid AND KERDES = :kerdes_old";
+    $stid = oci_parse($conn,$sql);
+
+    oci_bind_by_name($stid, ":kerdes", $question);
+    oci_bind_by_name($stid, ":kerdes_old", $question_old);
+    oci_bind_by_name($stid, ":jo_valasz", $jo_valasz);
+    oci_bind_by_name($stid, ":qid", $qid);
+    oci_execute($stid);
+    oci_free_statement($stid);
+}
+
+function update_valasz(string $valasz, string $valasz_old, string $qstring): void {
+    global $conn;
+    $sql = "
+    UPDATE ROSSZVALASZ SET
+        ROSSZ_VALASZ = :valasz
+    WHERE KERDES_ID = (
+    SELECT KERDES_ID FROM KERDES WHERE KERDES.KERDES = :qstring
+    ) AND ROSSZ_VALASZ = :valasz_old
+    ";
+
+    $stid = oci_parse($conn,$sql);
+
+    oci_bind_by_name($stid, ":valasz", $valasz);
+    oci_bind_by_name($stid, ":valasz_old", $valasz_old);
+    oci_bind_by_name($stid, ":qstring", $qstring);
+    oci_execute($stid);
+    oci_free_statement($stid);
+}
+
+function delete_quiz(int $qid): void {
+    global $conn;
+    $sql = "DELETE FROM QUIZ WHERE QUIZ_ID = :qid";
+    $stid = oci_parse($conn,$sql);
+
+    oci_bind_by_name($stid, ":qid", $qid);
+    oci_execute($stid);
+    oci_free_statement($stid);
+}
+
+function delete_account(Account $account): void {
+    global $conn;
+    $sql = "DELETE FROM FELHASZNALO WHERE FELHASZNALO_ID = :id";
+    $stid = oci_parse($conn,$sql);
+
+    $id = $account->getId();
+    oci_bind_by_name($stid, ":id", $id);
+    oci_execute($stid);
+    oci_free_statement($stid);
+    header("Location: logout.php");
+}
+
+function kitolt(Account $account, int $pont, int $qid): void {
+    global $conn;
+    $sql = "INSERT INTO KITOLT VALUES(:fid, :qid, TRUNC(SYSDATE), :pont)";
+
+    $stid = oci_parse($conn, $sql);
+
+    $id = $account->getId();
+    oci_bind_by_name($stid, ":fid", $id);
+    oci_bind_by_name($stid, ":qid", $qid);
+    oci_bind_by_name($stid, ":pont", $pont);
+    oci_execute($stid);
+    oci_free_statement($stid);
+
+    $sql = "
+    UPDATE FELHASZNALO SET
+        OSSZPONTSZAM = OSSZPONTSZAM + :pont
+    WHERE :fid = FELHASZNALO_ID
+    ";
+
+    $stid = oci_parse($conn, $sql);
+    oci_bind_by_name($stid, ":fid", $id);
+    oci_bind_by_name($stid, ":pont", $pont);
+    oci_execute($stid);
+    oci_free_statement($stid);
+
+    $sql = "
+    UPDATE QUIZ SET KITOLTES_SZAM = KITOLTES_SZAM + 1 WHERE QUIZ_ID = :qid
+    ";
+
+    $stid = oci_parse($conn, $sql);
+    oci_bind_by_name($stid, ":qid", $qid);
+    oci_execute($stid);
+    oci_free_statement($stid);
+}
+
+function get_leaderboard(): array {
+    global $conn;
+    $sql = "SELECT VEZETEKNEV, KERESZTNEV, OSSZPONTSZAM, COUNT(K.KITOLTES_PONTSZAM) AS KITOLTESEK FROM FELHASZNALO
+    INNER JOIN KITOLT K on FELHASZNALO.FELHASZNALO_ID = K.FELHASZNALO_ID
+    GROUP BY OSSZPONTSZAM, KERESZTNEV, VEZETEKNEV
+    ORDER BY OSSZPONTSZAM DESC";
+
+    $stid = oci_parse($conn, $sql);
+    oci_execute($stid);
+
+    $result = array();
+    oci_fetch_all($stid, $result, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
+    oci_free_statement($stid);
+
+    return $result;
+}
+
+function get_leaderboard_wavg(): array {
+    global $conn;
+    $sql = "SELECT
+        VEZETEKNEV,
+        KERESZTNEV,
+        ROUND(SUM(K.KITOLTES_PONTSZAM) / COUNT(*), 2) AS SULYOZOTT_ATLAG,
+        COUNT(*) AS KITOLTESEK
+    FROM
+        FELHASZNALO
+            INNER JOIN KITOLT K ON FELHASZNALO.FELHASZNALO_ID = K.FELHASZNALO_ID
+    GROUP BY
+        VEZETEKNEV,
+        KERESZTNEV
+    ORDER BY
+        SULYOZOTT_ATLAG DESC";
+
+    $stid = oci_parse($conn, $sql);
+    oci_execute($stid);
+
+    $result = array();
+    oci_fetch_all($stid, $result, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
+    oci_free_statement($stid);
+
+    return $result;
+}
+
+function get_quiz_leaderboard(int $qid): array {
+    global $conn;
+    $sql = "SELECT VEZETEKNEV, KERESZTNEV, MAX(K.KITOLTES_PONTSZAM) AS PONTSZAM FROM FELHASZNALO
+    INNER JOIN KITOLT K ON FELHASZNALO.FELHASZNALO_ID = K.FELHASZNALO_ID
+    WHERE K.QUIZ_ID = :qid
+    group by VEZETEKNEV, KERESZTNEV
+    ORDER BY PONTSZAM DESC";
+
+    $stid = oci_parse($conn, $sql);
+    oci_bind_by_name($stid, ":qid", $qid);
+    oci_execute($stid);
+
+    $result = array();
+    oci_fetch_all($stid, $result, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
+    oci_free_statement($stid);
+    return $result;
 }
 

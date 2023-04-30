@@ -1,0 +1,496 @@
+-- Drop szekvencia re-create -hez. (Funkciok es triggerek create or replace -el vannak)
+/*
+DROP TABLE Rosszvalasz;
+DROP TABLE Kerdes;
+DROP TABLE Keszit;
+DROP TABLE Kitolt;
+DROP TABLE Kategoria;
+DROP TABLE Quiz;
+DROP TABLE Felhasznalo;
+
+DROP SEQUENCE seq_felhasznalo;
+DROP SEQUENCE seq_kerdes;
+DROP SEQUENCE seq_quiz;
+*/
+
+create table Felhasznalo(
+                            felhasznalo_id NUMBER NOT NULL,
+                            email VARCHAR2(255) NOT NULL,
+                            jelszo VARCHAR2(255) NOT NULL,
+                            vezeteknev VARCHAR2(255) NOT NULL,
+                            keresztnev VARCHAR2(255) NOT NULL,
+                            eletkor NUMBER NOT NULL,
+                            osszpontszam NUMBER,
+                            PRIMARY KEY(felhasznalo_id)
+);
+
+create table Quiz(
+                     quiz_id NUMBER NOT NULL,
+                     quiz_nev VARCHAR2(255) NOT NULL,
+                     rangsor NUMBER,
+                     kitoltes_szam NUMBER,
+                     PRIMARY KEY(quiz_id)
+);
+
+create table Kerdes(
+                       kerdes_id NUMBER NOT NULL,
+                       quiz_id NUMBER NOT NULL,
+                       kerdes VARCHAR2(255) NOT NULL,
+                       jo_valasz VARCHAR2(255) NOT NULL,
+                       PRIMARY KEY(kerdes_id),
+                       FOREIGN KEY(quiz_id) REFERENCES Quiz(quiz_id)
+);
+
+create table Rosszvalasz(
+                            kerdes_id NUMBER NOT NULL,
+                            rossz_valasz VARCHAR2(255) NOT NULL,
+                            FOREIGN KEY(kerdes_id) REFERENCES Kerdes(kerdes_id)
+);
+
+create table Kategoria(
+                          quiz_id NUMBER NOT NULL,
+                          kategoria VARCHAR2(255) NOT NULL,
+                          FOREIGN KEY(quiz_id) REFERENCES Quiz(quiz_id)
+);
+
+create table Kitolt(
+                       felhasznalo_id NUMBER NOT NULL,
+                       quiz_id NUMBER NOT NULL,
+                       kitoltes_idopont DATE,
+                       kitoltes_pontszam NUMBER,
+                       FOREIGN KEY(felhasznalo_id) REFERENCES Felhasznalo(felhasznalo_id),
+                       FOREIGN KEY(quiz_id) REFERENCES Quiz(quiz_id)
+);
+
+create table Keszit(
+                       felhasznalo_id NUMBER NOT NULL,
+                       quiz_id NUMBER NOT NULL,
+                       letrehozas_idopont DATE,
+                       FOREIGN KEY(felhasznalo_id) REFERENCES Felhasznalo(felhasznalo_id),
+                       FOREIGN KEY(quiz_id) REFERENCES Quiz(quiz_id)
+);
+
+CREATE SEQUENCE seq_felhasznalo
+    MINVALUE 1
+    START WITH 1
+    INCREMENT BY 1
+    CACHE 100;
+
+CREATE SEQUENCE seq_quiz
+    MINVALUE 1
+    START WITH 1
+    INCREMENT BY 1
+    CACHE 100;
+
+CREATE SEQUENCE seq_kerdes
+    MINVALUE 1
+    START WITH 1
+    INCREMENT BY 1
+    CACHE 100;
+
+-- Password: dummypassword
+INSERT INTO Felhasznalo VALUES(seq_felhasznalo.nextval, 'dummyuser@gmail.com', '$2a$10$dOUHQ67v/yrJ4kA7C1gtZO3ujZnCq49XIYheVGRBxU6W9rMgDMbHG', 'Vezetek', 'Kereszt', 1, 18);
+-- Password: notsodummypassword
+INSERT INTO Felhasznalo VALUES(seq_felhasznalo.nextval, 'notsodummyuser@gmail.com', '$2a$10$EKlHkQhw62kyl5ZO29em2udkLsyjyIV5uk85GLs2ttigVejIkYv2a', 'notVezetek', 'notKereszt', 1, 15);
+-- Password: user
+INSERT INTO Felhasznalo VALUES(seq_felhasznalo.nextval, 'user@user.com', '$2a$10$SzC0SO1K63NJyjaPaRV8he/KDhHzCho.gBne2eBwtxLZIAbfc66sy', 'User1', 'User2', 1, 17);
+-- Password: userpassword
+INSERT INTO Felhasznalo VALUES(seq_felhasznalo.nextval, 'myuser@myuser.com', '$2a$10$G2IykeBkskJsnPExO3EVEOUiuRElV/v43XuM44JVZZPNlnUwX8JMS', 'MynameisAfganisztán', 'ButWithOutThis', 1, 20);
+
+INSERT INTO Quiz VALUES(seq_quiz.nextval, 'Matekos kérdések', 0, 2); -- Max pont 8
+INSERT INTO Quiz VALUES(seq_quiz.nextval, 'Földrajz kérdések', 0, 0); -- Max pont 8
+INSERT INTO Quiz VALUES(seq_quiz.nextval, 'Általános tudnivalók',0, 1); -- Max pont 8
+INSERT INTO Quiz VALUES(seq_quiz.nextval, 'Fizikás kérdések',0, 1); -- Max pont 8
+INSERT INTO Quiz VALUES(seq_quiz.nextval, 'Kezdő kémia',0, 1); -- Max pont 8
+INSERT INTO Quiz VALUES(seq_quiz.nextval, 'Programozás',0, 1); -- Max pont 8
+INSERT INTO Quiz VALUES(seq_quiz.nextval, 'Biológia',0, 1); -- Max pont 8
+
+-- Kérdések 1. quizhez
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 1, 'Mennyi 2+2?', '4');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 1, 'Mennyi 2-2?', '0');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 1, 'Mennyi 2*2?', '4');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 1, 'Mennyi 2/2?', '1');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 1, 'Mennyi 3+2?', '5');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 1, 'Mennyi 3-2?', '1');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 1, 'Mennyi 3*2?', '6');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 1, 'Mennyi 3/2?', '1.5');
+
+
+-- Kérdések 2. quizhez
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 2, 'Hol van Magyarország?', 'Európa');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 2, 'Hol van Lengyelország?', 'Európa');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 2, 'Hol van Németország?', 'Európa');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 2, 'Hol van Olaszország?', 'Európa');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 2, 'Hol van Spanyolország?', 'Európa');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 2, 'Hol van Szerbia?', 'Európa');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 2, 'Hol van az Amerika Egyesült Államok?', 'Észak-Amerika');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 2, 'Hol van Kína?', 'Ázsia');
+
+-- Kérdések 3. quizhez
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Pozsony melyik ország fővárosa?', 'Szlovákia');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Mivel egészítenéd ki? Ne igyál előre a ... bőrére.
+?', 'Medve');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Ki volt Poszeidon a görög mitológiában?', 'A tenger istene');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Melyik bolygó van a legközelebb a Naphoz, a Naprendszerünkben?', 'Merkúr');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Milyen tudomány az archeológia?', 'Régészet');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Embereknél hol található az egyensúlyozás szerve?', 'Belsőfülben');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Hány megabájt egy gigabájt?', '1024');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Mit rövidít az IT?', 'Information Technologies');
+
+-- Kérdések 4. quizhez
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Milyen fizikai mennyiséget mér a folyadékokban található "manométer"?', 'Nyomást');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Mi a neve annak a fizikai jelenségnek, amely során a fény megtörik, amikor áthalad egy átlátszó közegen?', 'Refrakció');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Melyik törvény írja le az erő és a gyorsulás kapcsolatát?', 'Newton második törvénye');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Melyik fizikai mennyiség méri az anyag mennyiségét?', 'Moláris mennyiség');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4,'Melyik elemi részecskéből állnak az atommagok', 'Protonok és neutronok');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Melyik fizikai törvény állítja, hogy a hő mindig a magasabb hőmérsékletű testről áramlik a hidegebbre?', 'Termodinamika második törvénye');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Mi a neve annak a fizikai jelenségnek, amely során az elektromos áram egy vezetőben állandó marad, ha a vezető véges ellenállással rendelkezik?', 'Ohm törvénye');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Melyik fizikai törvény mondja ki, hogy az energia nem teremthető és nem semmisülhet meg, csak átalakítható más formákra?', 'Az energiamegmaradás törvénye');
+
+-- Kérdések 5. quizhez
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Mi az elemek periódusos rendszerében az oszlopok neve?', 'Csoportok');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Melyik kémiailag aktív gáz szerepel a levegőben a legnagyobb arányban?', 'Nitrogén');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Mi az atomok száma a kén vegyértékében?', '16');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Mi a kémiai elemek legkisebb részecskéje, amelynek kémiailag is megfelelő?', 'Atom');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Melyik szervetlen sav szerepel a gyomornedvben?', 'Salavész-sav');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Melyik savas oxigenált ion szerepel a klórsavban?', 'Klorát-ion');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Melyik anyag van jelen a szóda vizes oldatában?', 'Nátrium-bikarbonát');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Melyik vegyület alkotja a víz molekuláját?', 'Hidrogén és oxigén');
+-- Kérdések 6. quizhez
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mit jelent az MVC rövidítés?', 'Model-View-Controller');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mi a különbség a "==" és a "===" operátorok között JavaScriptben?', 'Az "===" operátor szigorúbb típusú összehasonlítást végez');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Melyik programozási nyelv használja az "if", "else" és "else if" utasításokat?', 'Mindhárom');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mi a JavaScript?', 'Egy objektumorientált programozási nyelv');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mit jelent a "SQL" rövidítés?', 'Structured Query Language');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Milyen típusú adatokat tárol a "float" változó típus?', 'Lebegőpontos számokat');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Melyik adatstruktúra alapú algoritmus van a három alapvető algoritmus között?', 'Rekurzió');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Melyik programozási nyelv használja a "for" és a "while" ciklusokat?', 'Mindhárom egyenlő');
+
+-- Kérdések 7. quizhez
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 7, 'Melyik sejttypusban található a sejtmag?', 'egyikben sem található');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 7, 'Melyik anyag felelős az öröklődésért?', 'nukleinsavak');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 7, 'Melyik szervünk felelős a vér oxigénellátásáért?', 'szív');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 7, 'Melyik szervünk szabályozza a testhőmérsékletet?','agy');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 7, 'Melyik állítás igaz az endokrin rendszerre?','a hormonok segítségével szabályozza a test különböző folyamatait');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 7, 'Melyik folyamat során alakul ki az ATP?', 'összes felsorolt folyamatban');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 7, 'Melyik állítás igaz az evolúcióra?', 'a természetes szelekció révén az élőlények jobban alkalmazkodnak a környezetükhöz');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 7, 'Melyik anyag felelős a sejtfal felépítéséért a növényi sejtekben?', 'cellulóz');
+-- Quiz 1. rossz válaszok
+INSERT INTO Rosszvalasz VALUES(1, '3');
+INSERT INTO Rosszvalasz VALUES(1, '0');
+INSERT INTO Rosszvalasz VALUES(1, '7');
+
+INSERT INTO Rosszvalasz VALUES(2, '-2');
+INSERT INTO Rosszvalasz VALUES(2, '4');
+INSERT INTO Rosszvalasz VALUES(2, '62.38');
+
+INSERT INTO Rosszvalasz VALUES(3, '8');
+INSERT INTO Rosszvalasz VALUES(3, '2');
+INSERT INTO Rosszvalasz VALUES(3, '6');
+
+INSERT INTO Rosszvalasz VALUES(4, '2');
+INSERT INTO Rosszvalasz VALUES(4, '4');
+INSERT INTO Rosszvalasz VALUES(4, '0');
+
+INSERT INTO Rosszvalasz VALUES(5, '6');
+INSERT INTO Rosszvalasz VALUES(5, '4');
+INSERT INTO Rosszvalasz VALUES(5, '-3');
+
+INSERT INTO Rosszvalasz VALUES(6, '-3');
+INSERT INTO Rosszvalasz VALUES(6, '3');
+INSERT INTO Rosszvalasz VALUES(6, '-1');
+
+INSERT INTO Rosszvalasz VALUES(7, '9');
+INSERT INTO Rosszvalasz VALUES(7, '16');
+INSERT INTO Rosszvalasz VALUES(7, '7.5');
+
+INSERT INTO Rosszvalasz VALUES(8, '3');
+INSERT INTO Rosszvalasz VALUES(8, '3');
+INSERT INTO Rosszvalasz VALUES(8, '3');
+
+
+-- Quiz 2 rossz válaszok
+INSERT INTO Rosszvalasz VALUES(9, 'Ázsia');
+INSERT INTO Rosszvalasz VALUES(9, 'Dél-Amerika');
+INSERT INTO Rosszvalasz VALUES(9, 'Antarktisz');
+
+INSERT INTO Rosszvalasz VALUES(10, 'Ázsia');
+INSERT INTO Rosszvalasz VALUES(10, 'Óceánia');
+INSERT INTO Rosszvalasz VALUES(10, 'Kecskemét');
+
+INSERT INTO Rosszvalasz VALUES(11, 'Kanada');
+INSERT INTO Rosszvalasz VALUES(11, 'Ázsia');
+INSERT INTO Rosszvalasz VALUES(11, 'Dél-Amerika');
+
+INSERT INTO Rosszvalasz VALUES(12, 'Dél-Amerika');
+INSERT INTO Rosszvalasz VALUES(12, 'Észak-Amerika');
+INSERT INTO Rosszvalasz VALUES(12, 'Szerda');
+
+INSERT INTO Rosszvalasz VALUES(13, 'Ázsia');
+INSERT INTO Rosszvalasz VALUES(13, 'Antarktisz');
+INSERT INTO Rosszvalasz VALUES(13, 'Dél-Amerika');
+
+INSERT INTO Rosszvalasz VALUES(14, 'Óceánia');
+INSERT INTO Rosszvalasz VALUES(14, 'Pécs');
+INSERT INTO Rosszvalasz VALUES(14, 'Románia');
+
+INSERT INTO Rosszvalasz VALUES(15, 'Anglia');
+INSERT INTO Rosszvalasz VALUES(15, 'Kanada');
+INSERT INTO Rosszvalasz VALUES(15, 'Afrika');
+
+INSERT INTO Rosszvalasz VALUES(16, 'Afrika');
+INSERT INTO Rosszvalasz VALUES(16, 'Óceánia');
+INSERT INTO Rosszvalasz VALUES(16, 'Európa');
+
+
+-- Quiz 3 rossz válaszok
+INSERT INTO Rosszvalasz VALUES(17, 'Csehország');
+INSERT INTO Rosszvalasz VALUES(17, 'Szlovénia');
+INSERT INTO Rosszvalasz VALUES(17, 'Magyarország');
+
+INSERT INTO Rosszvalasz VALUES(18, 'Kecske');
+INSERT INTO Rosszvalasz VALUES(18, 'Kutya');
+INSERT INTO Rosszvalasz VALUES(18, 'Macska');
+
+INSERT INTO Rosszvalasz VALUES(19, 'A tűz istene');
+INSERT INTO Rosszvalasz VALUES(19, 'A villámok istene');
+INSERT INTO Rosszvalasz VALUES(19, 'A hülyeség istene');
+
+INSERT INTO Rosszvalasz VALUES(20, 'Vénusz');
+INSERT INTO Rosszvalasz VALUES(20, 'Uránusz');
+INSERT INTO Rosszvalasz VALUES(20, 'Mars');
+
+INSERT INTO Rosszvalasz VALUES(21, 'Embertan');
+INSERT INTO Rosszvalasz VALUES(21, 'Növénytan');
+INSERT INTO Rosszvalasz VALUES(21, 'Földtan');
+
+INSERT INTO Rosszvalasz VALUES(22, 'Hasban');
+INSERT INTO Rosszvalasz VALUES(22, 'Fejben');
+INSERT INTO Rosszvalasz VALUES(22, 'A lábban');
+
+INSERT INTO Rosszvalasz VALUES(23, '1000');
+INSERT INTO Rosszvalasz VALUES(23, 'Csak 1 lehet mert ugyanaz.');
+INSERT INTO Rosszvalasz VALUES(23, '666');
+
+INSERT INTO Rosszvalasz VALUES(24, 'Infantilis Törvények');
+INSERT INTO Rosszvalasz VALUES(24, 'Information Teslanologies');
+INSERT INTO Rosszvalasz VALUES(24, 'Inf.u-szeged.hu Többit_nem_tudom');
+
+-- Quiz 4 rossz válaszok
+INSERT INTO Rosszvalasz VALUES(25,'Hőmérséklet');
+INSERT INTO Rosszvalasz VALUES(25,'Sűrűséget');
+INSERT INTO Rosszvalasz VALUES(25,'Sebességet');
+
+INSERT INTO Rosszvalasz VALUES(26,'Rezonancia');
+INSERT INTO Rosszvalasz VALUES(26,'Reflektivitás');
+INSERT INTO Rosszvalasz VALUES(26,'Abszorpció');
+
+INSERT INTO Rosszvalasz VALUES(27,'Ohm törvénye');
+INSERT INTO Rosszvalasz VALUES(27,'Faraday törvénye');
+INSERT INTO Rosszvalasz VALUES(27,'Archimedes törvénye');
+
+INSERT INTO Rosszvalasz VALUES(28,'Moláris tömeg');
+INSERT INTO Rosszvalasz VALUES(28,'Anyagi tömeg');
+INSERT INTO Rosszvalasz VALUES(28,'Térfogat');
+
+INSERT INTO Rosszvalasz VALUES(29,'Elektronok és protonok');
+INSERT INTO Rosszvalasz VALUES(29,'Elektronok és neutronok');
+INSERT INTO Rosszvalasz VALUES(29,'Szubatomi részecskék és antirészecskék');
+
+INSERT INTO Rosszvalasz VALUES(29,'Newton hőtörvénye');
+INSERT INTO Rosszvalasz VALUES(29,'Stefan-Boltzmann törvénye');
+INSERT INTO Rosszvalasz VALUES(29,'Termodinamika első törvénye');
+
+INSERT INTO Rosszvalasz VALUES(30,'Faraday törvénye');
+INSERT INTO Rosszvalasz VALUES(30,'Coulomb törvénye');
+INSERT INTO Rosszvalasz VALUES(30,'Kirchhoff törvénye');
+
+INSERT INTO Rosszvalasz VALUES(31,'Termodinamika első törvénye');
+INSERT INTO Rosszvalasz VALUES(31,'Termodinamika második törvénye');
+INSERT INTO Rosszvalasz VALUES(31,'Lenz törvénye');
+
+-- Quiz 5 rossz válaszok
+
+INSERT INTO Rosszvalasz VALUES(32, 'Ciklusok');
+INSERT INTO Rosszvalasz VALUES(32, 'Szintek');
+INSERT INTO Rosszvalasz VALUES(32, 'Periódusok');
+INSERT INTO Rosszvalasz VALUES(33, 'Oxigén');
+INSERT INTO Rosszvalasz VALUES(33, 'Hélium');
+INSERT INTO Rosszvalasz VALUES(33, 'Szén-dioxid');
+INSERT INTO Rosszvalasz VALUES(34, '14');
+INSERT INTO Rosszvalasz VALUES(34, '20');
+INSERT INTO Rosszvalasz VALUES(34, '18');
+INSERT INTO Rosszvalasz VALUES(35, 'Molekula');
+INSERT INTO Rosszvalasz VALUES(35, 'Ion');
+INSERT INTO Rosszvalasz VALUES(35, 'Elektron');
+INSERT INTO Rosszvalasz VALUES(36, 'Savas-só');
+INSERT INTO Rosszvalasz VALUES(36, 'Salavész-sav');
+INSERT INTO Rosszvalasz VALUES(36, 'Szén-dioxid');
+INSERT INTO Rosszvalasz VALUES(37, 'Klorid-ion');
+INSERT INTO Rosszvalasz VALUES(37, 'Klórosav');
+INSERT INTO Rosszvalasz VALUES(37, 'Klorid-peroxid');
+INSERT INTO Rosszvalasz VALUES(38, 'Kalcium-klorid');
+INSERT INTO Rosszvalasz VALUES(38, 'Nátrium-klorid');
+INSERT INTO Rosszvalasz VALUES(38, 'Magnézium-klorid');
+INSERT INTO Rosszvalasz VALUES(39, 'Hidrogén-szulfát');
+INSERT INTO Rosszvalasz VALUES(39, 'Kénsav');
+INSERT INTO Rosszvalasz VALUES(39, 'Sósav');
+-- Quiz 6 rossz válaszok
+INSERT INTO Rosszvalasz VALUES(40, 'Model-View-Cache');
+INSERT INTO Rosszvalasz VALUES(40, 'Model-View-Component');
+INSERT INTO Rosszvalasz VALUES(40, 'Model-View-Compiler');
+INSERT INTO Rosszvalasz VALUES(41, 'Nincs különbség');
+INSERT INTO Rosszvalasz VALUES(41, 'Az "==" operátor azonos típusú összehasonlítást végez');
+INSERT INTO Rosszvalasz VALUES(41, 'Az "===" operátor csak a string típust használja');
+INSERT INTO Rosszvalasz VALUES(42, 'Python');
+INSERT INTO Rosszvalasz VALUES(42, 'C++');
+INSERT INTO Rosszvalasz VALUES(42, 'Java');
+INSERT INTO Rosszvalasz VALUES(43, 'Egy markup nyelv');
+INSERT INTO Rosszvalasz VALUES(43, 'Egy adatbázis nyelv');
+INSERT INTO Rosszvalasz VALUES(43, 'Egy operációs rendszer');
+INSERT INTO Rosszvalasz VALUES(44, 'Simple Query Language');
+INSERT INTO Rosszvalasz VALUES(44, 'Script Query Language');
+INSERT INTO Rosszvalasz VALUES(44, 'Sequential Query Language');
+INSERT INTO Rosszvalasz VALUES(45, 'Egész számokat');
+INSERT INTO Rosszvalasz VALUES(45, 'Szöveges adatokat');
+INSERT INTO Rosszvalasz VALUES(45, 'Logikai értékeket');
+INSERT INTO Rosszvalasz VALUES(45, 'Sorozat');
+INSERT INTO Rosszvalasz VALUES(45, 'Mindhárom egyenlő');
+INSERT INTO Rosszvalasz VALUES(45, 'Ciklus');
+INSERT INTO Rosszvalasz VALUES(46, 'JavaScript');
+INSERT INTO Rosszvalasz VALUES(46, 'Python');
+INSERT INTO Rosszvalasz VALUES(46, 'Java');
+
+-- Quiz 7 rossz válaszok
+INSERT INTO Rosszvalasz VALUES(47, 'prokarióta sejtek');
+INSERT INTO Rosszvalasz VALUES(47, 'eukarióta sejtek');
+INSERT INTO Rosszvalasz VALUES(47, 'mindkét típusban megtalálható');
+INSERT INTO Rosszvalasz VALUES(48, 'fehérjék');
+INSERT INTO Rosszvalasz VALUES(48, 'lipidek');
+INSERT INTO Rosszvalasz VALUES(48, 'szénhidrátok');
+INSERT INTO Rosszvalasz VALUES(49, 'tüdő');
+INSERT INTO Rosszvalasz VALUES(49, 'vesék');
+INSERT INTO Rosszvalasz VALUES(49, 'máj');
+INSERT INTO Rosszvalasz VALUES(50, 'vesék');
+INSERT INTO Rosszvalasz VALUES(50, 'máj');
+INSERT INTO Rosszvalasz VALUES(50, 'hasnyálmirigy');
+INSERT INTO Rosszvalasz VALUES(51, 'nincs szerepe a test szabályozásában');
+INSERT INTO Rosszvalasz VALUES(51, 'csak egyetlen hormont termel');
+INSERT INTO Rosszvalasz VALUES(51, 'csak idegsejtek állítják elő az endokrin rendszer hormonjait');
+INSERT INTO Rosszvalasz VALUES(52, 'fotoszintézis');
+INSERT INTO Rosszvalasz VALUES(52, 'glikolízis');
+INSERT INTO Rosszvalasz VALUES(52, 'citromsav ciklus');
+INSERT INTO Rosszvalasz VALUES(53, 'az egyének az életük során megszerzik a megfelelő tulajdonságokat');
+INSERT INTO Rosszvalasz VALUES(53, 'az evolúció mindig célzott, előre tervezett folyamat');
+INSERT INTO Rosszvalasz VALUES(53, 'az evolúció során mindig új fajok jönnek létre');
+INSERT INTO Rosszvalasz VALUES(54, 'lignin');
+INSERT INTO Rosszvalasz VALUES(54, 'kitin');
+INSERT INTO Rosszvalasz VALUES(54, 'peptidoglikán');
+
+-- Quiz kategóriák
+INSERT INTO Kategoria VALUES(1, 'Matematika');
+INSERT INTO Kategoria VALUES(1, 'Kezdő');
+INSERT INTO Kategoria VALUES(1, 'Első quizem');
+INSERT INTO Kategoria VALUES(2, 'Földrajz');
+INSERT INTO Kategoria VALUES(2, 'Kezdő');
+INSERT INTO Kategoria VALUES(3, 'Vegyes');
+INSERT INTO Kategoria VALUES(3, 'Általános ismeretek');
+INSERT INTO Kategoria VALUES(3, 'Saját kategória');
+INSERT INTO Kategoria VALUES(4, 'Fizika');
+INSERT INTO Kategoria VALUES(5, 'Kémia');
+INSERT INTO Kategoria VALUES(5, 'Kezdő');
+INSERT INTO Kategoria VALUES(6, 'Programozás');
+INSERT INTO Kategoria VALUES(6, 'Vegyes');
+INSERT INTO Kategoria VALUES(7, 'Biológia');
+
+-- Kitöltések
+INSERT INTO Kitolt VALUES(1, 1, TO_DATE('2023 01 27', 'yyyy mm dd'), 8);
+INSERT INTO Kitolt VALUES(1, 2, TO_DATE('2023 02 17', 'yyyy mm dd'), 4);
+INSERT INTO Kitolt VALUES(1, 3, TO_DATE('2023 03 26', 'yyyy mm dd'), 6);
+
+INSERT INTO Kitolt VALUES(2, 1, TO_DATE('2023 02 12', 'yyyy mm dd'), 8);
+INSERT INTO Kitolt VALUES(2, 2, TO_DATE('2023 02 13', 'yyyy mm dd'), 2);
+INSERT INTO Kitolt VALUES(2, 3, TO_DATE('2023 03 28', 'yyyy mm dd'), 5);
+
+INSERT INTO Kitolt VALUES(3, 1, TO_DATE('2023 01 28', 'yyyy mm dd'), 3);
+INSERT INTO Kitolt VALUES(3, 2, TO_DATE('2023 02 27', 'yyyy mm dd'), 6);
+INSERT INTO Kitolt VALUES(3, 3, TO_DATE('2023 03 25', 'yyyy mm dd'), 8);
+
+INSERT INTO Kitolt VALUES(4, 1, TO_DATE('2023 01 29', 'yyyy mm dd'), 4);
+INSERT INTO Kitolt VALUES(4, 2, TO_DATE('2023 02 20', 'yyyy mm dd'), 8);
+INSERT INTO Kitolt VALUES(4, 3, TO_DATE('2023 03 27', 'yyyy mm dd'), 8);
+
+-- Készítések
+INSERT INTO Keszit VALUES(1, 1, TO_DATE('2023 01 26', 'yyyy mm dd'));
+INSERT INTO Keszit VALUES(2, 2, TO_DATE('2023 02 12', 'yyyy mm dd'));
+INSERT INTO Keszit VALUES(3, 3, TO_DATE('2023 03 24', 'yyyy mm dd'));
+INSERT INTO Keszit VALUES(1, 4, TO_DATE('2023 04 22', 'yyyy mm dd'));
+INSERT INTO Keszit VALUES(1, 5, TO_DATE('2023 04 23', 'yyyy mm dd'));
+INSERT INTO Keszit VALUES(1, 6, TO_DATE('2023 04 24', 'yyyy mm dd'));
+INSERT INTO Keszit VALUES(1, 7, TO_DATE('2023 04 25', 'yyyy mm dd'));
+
+
+create or replace FUNCTION QuizKeres (
+    p_kategoria IN VARCHAR2
+)
+    RETURN SYS_REFCURSOR
+AS
+    ret_cursor SYS_REFCURSOR;
+BEGIN
+    OPEN ret_cursor FOR SELECT QUIZ.QUIZ_NEV
+                        FROM QUIZ
+                                 INNER JOIN kategoria ON QUIZ.quiz_id = kategoria.quiz_id
+                        WHERE kategoria.kategoria LIKE p_kategoria;
+    RETURN ret_cursor;
+END QuizKeres;
+/
+
+create or replace FUNCTION REGISTER (
+    p_email IN VARCHAR2,
+    p_jelszo IN VARCHAR2,
+    p_vezet IN VARCHAR2,
+    p_kereszt IN VARCHAR2,
+    p_eletkor IN NUMBER
+)
+    RETURN NUMBER
+AS
+    felh Felhasznalo%ROWTYPE;
+    CURSOR c_felhasznalo IS
+        SELECT *
+        FROM Felhasznalo;
+BEGIN
+    OPEN c_felhasznalo;
+    LOOP
+        FETCH c_felhasznalo INTO felh;
+        EXIT WHEN c_felhasznalo%NOTFOUND;
+        IF felh.email = p_email THEN
+            RETURN 0;
+        end if;
+    END LOOP;
+    CLOSE c_felhasznalo;
+
+    INSERT INTO Felhasznalo VALUES (seq_felhasznalo.nextval, p_email, p_jelszo, p_vezet, p_kereszt, p_eletkor, 0);
+
+    RETURN 1;
+END REGISTER;
+/
+
+create or replace trigger QUIZ_TRIGGER
+    before delete
+    on QUIZ
+    for each row
+BEGIN
+    DELETE FROM KESZIT WHERE KESZIT.QUIZ_ID = :OLD.QUIZ_ID;
+    DELETE FROM KERDES WHERE KERDES.QUIZ_ID = :OLD.QUIZ_ID;
+    DELETE FROM KITOLT WHERE KITOLT.QUIZ_ID = :OLD.QUIZ_ID;
+END;
+/
+
+create or replace trigger KERDES_DELETE
+    before delete
+    on KERDES
+    for each row
+BEGIN
+    DELETE FROM ROSSZVALASZ WHERE ROSSZVALASZ.KERDES_ID = :OLD.KERDES_ID;
+END;
+/

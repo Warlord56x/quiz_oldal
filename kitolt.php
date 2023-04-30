@@ -1,21 +1,31 @@
 <?php
-session_start();
-
 include "database.php";
+session_start();
 
 $quizes_kerdes = null;
 $quiz_nev = null;
+$quiz_id = null;
 if (isset($_GET["quiz"]) && $_GET["quiz"] !== "") {
-    $quizes_kerdes = get_quiz_questions_answers($_GET["quiz"]);
-    $quiz_nev = $_GET["quiz"];
+    $quizes_kerdes = get_quiz_questions_answers(intval($_GET["quiz"]));
+    $quiz_nev = $_GET["qname"];
+    $quiz_id = $_GET["quiz"];
 }
 if (isset($_POST["quiz"]) && $_POST["quiz"] !== "") {
-    $quizes_kerdes = get_quiz_questions_answers($_POST["quiz"]);
-    $quiz_nev = $_POST["quiz"];
+    $quizes_kerdes = get_quiz_questions_answers(intval($_POST["quiz"]));
+    $quiz_nev = $_POST["qname"];
+    $quiz_id = $_POST["quiz"];
 }
+
+$account = null;
+if (isset($_SESSION["felhasznalo"])) {
+    $account = $_SESSION["felhasznalo"];
+}
+
+
 
 $checking = array();
 $valasz = null;
+$pont = 0;
 if (isset($_POST["fill"])) {
     for($i = 0; $i < count($quizes_kerdes); $i++) {
         $kerdes = $quizes_kerdes[$i][0];
@@ -23,8 +33,16 @@ if (isset($_POST["fill"])) {
         $result = check_answer($kerdes, $valasz);
 
         $checking[] = [$valasz, $result];
+        if ($result) {
+            $pont++;
+        }
+    }
+    if ($account !== null) {
+        echo $quiz_id;
+        kitolt($account, $pont, intval($quiz_id));
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -38,6 +56,7 @@ if (isset($_POST["fill"])) {
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
 </head>
 <body class="bg-black text-white">
@@ -51,6 +70,7 @@ include_once "nav.php";
 
 <?php if ((isset($_GET["quiz"]) && $_GET['quiz'] !== "") || (isset($_POST["quiz"]) && $_POST["quiz"] !== "")) {?>
     <h2 class="text-center m-4"><?php echo $quiz_nev; ?></h2>
+    <h3 class="text-center m-4"><?php echo $pont. " / " .count($quizes_kerdes); ?></h3>
     <form class="container" action="kitolt.php" method="post">
         <?php
         for($i = 0; $i < count($quizes_kerdes); $i++) {
@@ -118,7 +138,8 @@ include_once "nav.php";
                 </div>
             </div>
             <?php }?>
-        <input type="hidden" name="quiz" value="<?php echo $quiz_nev; ?>">
+        <input type="hidden" name="quiz" value="<?php echo $quiz_id; ?>">
+        <input type="hidden" name="qname" value="<?php echo $quiz_nev; ?>">
         <button type="submit" class="btn btn-primary mb-3" name="fill">Kitöltés befejezése.</button>
     </form>
 <?php } else { ?>

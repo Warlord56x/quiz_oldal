@@ -1,10 +1,6 @@
 <?php
 include "database.php";
-global $conn;
 session_start();
-
-$account_error = null;
-$account_update_error = null;
 
 if (!isset($_SESSION["felhasznalo"])) {
     header("Location: index.php");
@@ -12,49 +8,76 @@ if (!isset($_SESSION["felhasznalo"])) {
 
 $account = $_SESSION["felhasznalo"];
 
+$keszit_error = null;
 
 if (isset($_POST["quiz_keszit"])) {
 
-    $kerdes_size = $_POST["count_k"];
-    $valasz_size = json_decode($_POST["count_v"], true);
-
-    $valaszok = array();
-    $jo_valaszok = array();
-    $kerdesek = array();
-    foreach ($valasz_size as $index => $key) {
-        for ($j = 1; $j <= $key; $j++) {
-
-            $valaszok[$_POST["qname".intval($index)]][] = $_POST[$index . "_valasz" . $j];
-        }
-
-    }
-    for ($i = 1; $i <= intval($kerdes_size); $i++) {
-        $kerdesek[] = $_POST["qname".$i];
-        $jo_valaszok[] = $valaszok[$_POST["qname".$i]][$_POST[$i."radio"]-1];
-    }
-    print_r($_POST); echo "<br>";
-    print_r($jo_valaszok);echo "<br>";
-    print_r($valaszok);echo "<br>";
-
-    create_quiz($account, $_POST["quiz_name"]);
-
-    foreach ($kerdesek as $index => $item) {
-        //echo $index; echo "<br>";
-        //echo $item; echo "<br>";
-        create_question($item, $jo_valaszok[$index]);
-    }
-    foreach ($valaszok as $kerdes_osztas) {
-        print_r($kerdes_osztas); echo "<br>";
-        foreach ($kerdes_osztas as $index => $item) {
-            if (in_array($item, $jo_valaszok)) {
+    foreach ($_POST as $index => $item) {
+        //echo (($item === null || $item === ""));
+        if (($item === null || $item === "")) {
+            if ($index === "quiz_keszit") {
                 continue;
             }
-            create_valasz($item, $_POST["qname".($index+1)]);
-            echo $index; echo "<br>";
-            echo $item; echo "<br>";
+            $keszit_error = "Minden mezőt ki kell tölteni!";
         }
     }
+    print_r($_POST);
+    //echo $keszit_error."asdasd";
 
+    if ($keszit_error === null) {
+        $kerdes_size = $_POST["count_k"];
+        $valasz_size = json_decode($_POST["count_v"], true);
+
+        $valaszok = array();
+        $jo_valaszok = array();
+        $kerdesek = array();
+        foreach ($valasz_size as $index => $key) {
+            for ($j = 1; $j <= $key; $j++) {
+                $valaszok[$_POST["qname" . intval($index)]][] = $_POST[$index . "_valasz" . $j];
+            }
+
+        }
+        for ($i = 1; $i <= intval($kerdes_size); $i++) {
+            $kerdesek[] = $_POST["qname" . $i];
+            $jo_valaszok[] = $valaszok[$_POST["qname" . $i]][$_POST[$i . "radio"] - 1];
+        }
+        /*
+        print_r($_POST);
+        echo "<br>";
+        print_r($jo_valaszok);
+        echo "<br>";
+        print_r($valaszok);
+        echo "<br>";
+        print_r($kerdesek);
+        echo "<br>";
+        */
+
+        create_quiz($account, $_POST["quiz_name"]);
+
+        foreach ($kerdesek as $index => $item) {
+            //echo $index; echo "<br>";
+            //echo $item; echo "<br>";
+            create_question($item, $jo_valaszok[$index]);
+        }
+        $i = 1;
+        foreach ($valaszok as $index => $kerdes_osztas) {
+            //print_r($kerdes_osztas);
+            //echo "<br>";
+            foreach ($kerdes_osztas as $index2 => $item) {
+                if (in_array($item, $jo_valaszok)) {
+                    continue;
+                }
+                /*
+                echo $index;
+                echo "<br>";
+                echo $item;
+                echo "<br>";
+                */
+                create_valasz($item, $_POST["qname" . ($i)]);
+            }
+            $i++;
+        }
+    }
 }
 
 
@@ -79,21 +102,24 @@ if (isset($_POST["quiz_keszit"])) {
 include_once "nav.php";
 ?>
 <div class="container mt-4" id="page">
+    <?php if ($keszit_error !== null) {?>
+        <h3 class="text-center m-4"><?php echo $keszit_error;?></h3>
+    <?php }?>
     <form action="keszit.php" method="post">
-    <div class="container" id="quiz">
-        <div class="mb-3">
-            <label for="quiz_name" class="form-label">Quiz név</label>
-            <input type="text" class="form-control" id="quiz_name" name="quiz_name" placeholder="Példa quiz">
-        </div>
+        <div class="container" id="quiz">
+            <div class="mb-3">
+                <label for="quiz_name" class="form-label">Quiz név</label>
+                <input type="text" class="form-control" id="quiz_name" name="quiz_name" placeholder="Példa quiz">
+            </div>
 
-    </div>
-    <div class="btn-group" role="group">
-        <button type="button" class="btn btn-primary" onclick="add_kerdes()">Kérdés hozzáadása</button>
-        <button type="button" class="btn btn-primary" onclick="remove_kerdes()">Kerdés elvétel</button>
-    </div>
-    <div class="btn-group" role="group" id="counts">
-        <button type="submit" class="btn btn-primary" name="quiz_keszit">Készít</button>
-    </div>
+        </div>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary" onclick="add_kerdes()">Kérdés hozzáadása</button>
+            <button type="button" class="btn btn-primary" onclick="remove_kerdes()">Kerdés elvétel</button>
+        </div>
+        <div class="m-3" id="counts">
+            <button type="submit" class="btn btn-primary" name="quiz_keszit">Készít</button>
+        </div>
     </form>
 </div>
 
@@ -127,8 +153,14 @@ include_once "nav.php";
     </div>
 `;
 
+
         valasz_list.append(clone);
         update_counts();
+        if (valasz_list.childElementCount > 0) {
+            const first = valasz_list.children.item(0);
+            const radio = first.querySelector("input[type='radio']");
+            radio.checked = true;
+        }
     }
 
     const remove_valasz = (kerdes) => {
@@ -181,7 +213,16 @@ include_once "nav.php";
         update_counts();
     }
 
+    const add_kategoria = () => {
+        // TODO
+    }
+
+    const remove_kategoria = () => {
+        // TODO
+    }
+
     const update_counts = () => {
+        // TODO implement kategoria handles
         const counts = document.getElementById("counts");
         if (counts.childElementCount > 1) {
             let last_element = counts.lastChild;
