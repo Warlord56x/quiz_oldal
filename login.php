@@ -11,7 +11,7 @@ if (isset($_POST["login"])) {
 
     if (count($error) == 0) {
         $felh = login($_POST["email"], $_POST["pswd"]);
-        if ($felh !== new Account()) {
+        if ($felh !== null) {
             $_SESSION["felhasznalo"] = $felh;
         } else {
             $error[] = "Hibás jelszó, email páros";

@@ -104,7 +104,7 @@ function check_answer(string $kerdes, string $valasz): bool {
     return oci_fetch($stmt);
 }
 
-function login(string $email, string $jelszo):Account {
+function login(string $email, string $jelszo) {
     global $conn;
     $sql = "SELECT * FROM FELHASZNALO WHERE EMAIL = :email";
     $stmt = oci_parse($conn, $sql);
@@ -116,7 +116,7 @@ function login(string $email, string $jelszo):Account {
 
     if (!$result || !isset($result["JELSZO"])) {
         // Nincs felhasznalo.
-        return new Account();
+        return null;
     }
 
     if (password_verify($jelszo ,$result["JELSZO"])) {
@@ -129,7 +129,7 @@ function login(string $email, string $jelszo):Account {
             intval($result["OSSZPONTSZAM"])
         );
     } else {
-        return new Account();
+        return null;
     }
 }
 
@@ -374,7 +374,7 @@ function delete_account(Account $account): void {
     oci_bind_by_name($stid, ":id", $id);
     oci_execute($stid);
     oci_free_statement($stid);
-    header("Location: logout.php");
+    //header("Location: logout.php");
 }
 
 function kitolt(Account $account, int $pont, int $qid): void {

@@ -21,7 +21,7 @@ if (isset($_POST["quiz_keszit"])) {
             $keszit_error = "Minden mezőt ki kell tölteni!";
         }
     }
-    print_r($_POST);
+    //print_r($_POST);
     //echo $keszit_error."asdasd";
 
     if ($keszit_error === null) {

@@ -1,5 +1,5 @@
 -- Drop szekvencia re-create -hez. (Funkciok es triggerek create or replace -el vannak)
-/*
+
 DROP TABLE Rosszvalasz;
 DROP TABLE Kerdes;
 DROP TABLE Keszit;
@@ -11,7 +11,7 @@ DROP TABLE Felhasznalo;
 DROP SEQUENCE seq_felhasznalo;
 DROP SEQUENCE seq_kerdes;
 DROP SEQUENCE seq_quiz;
-*/
+
 
 create table Felhasznalo(
                             felhasznalo_id NUMBER NOT NULL,
@@ -128,8 +128,7 @@ INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 2, 'Hol van Kína?', 'Ázsia');
 
 -- Kérdések 3. quizhez
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Pozsony melyik ország fővárosa?', 'Szlovákia');
-INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Mivel egészítenéd ki? Ne igyál előre a ... bőrére.
-?', 'Medve');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Erre ne igyál előre', 'Medve bőre');
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Ki volt Poszeidon a görög mitológiában?', 'A tenger istene');
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Melyik bolygó van a legközelebb a Naphoz, a Naprendszerünkben?', 'Merkúr');
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Milyen tudomány az archeológia?', 'Régészet');
@@ -138,7 +137,7 @@ INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Hány megabájt egy gigabájt?
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 3, 'Mit rövidít az IT?', 'Information Technologies');
 
 -- Kérdések 4. quizhez
-INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Milyen fizikai mennyiséget mér a folyadékokban található "manométer"?', 'Nyomást');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Milyen fizikai mennyiséget mér a folyadékokban található ^manométer^?', 'Nyomást');
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Mi a neve annak a fizikai jelenségnek, amely során a fény megtörik, amikor áthalad egy átlátszó közegen?', 'Refrakció');
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Melyik törvény írja le az erő és a gyorsulás kapcsolatát?', 'Newton második törvénye');
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 4, 'Melyik fizikai mennyiség méri az anyag mennyiségét?', 'Moláris mennyiség');
@@ -158,13 +157,13 @@ INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Melyik anyag van jelen a szód
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 5, 'Melyik vegyület alkotja a víz molekuláját?', 'Hidrogén és oxigén');
 -- Kérdések 6. quizhez
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mit jelent az MVC rövidítés?', 'Model-View-Controller');
-INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mi a különbség a "==" és a "===" operátorok között JavaScriptben?', 'Az "===" operátor szigorúbb típusú összehasonlítást végez');
-INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Melyik programozási nyelv használja az "if", "else" és "else if" utasításokat?', 'Mindhárom');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mi a különbség a ^==^ és a ^===^ operátorok között JavaScriptben?', 'Az ^===^ operátor szigorúbb típusú összehasonlítást végez');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Melyik programozási nyelv használja az ^if^, ^else^ és ^else if^ utasításokat?', 'Mindhárom');
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mi a JavaScript?', 'Egy objektumorientált programozási nyelv');
-INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mit jelent a "SQL" rövidítés?', 'Structured Query Language');
-INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Milyen típusú adatokat tárol a "float" változó típus?', 'Lebegőpontos számokat');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Mit jelent a ^SQL^ rövidítés?', 'Structured Query Language');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Milyen típusú adatokat tárol a ^float^ változó típus?', 'Lebegőpontos számokat');
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Melyik adatstruktúra alapú algoritmus van a három alapvető algoritmus között?', 'Rekurzió');
-INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Melyik programozási nyelv használja a "for" és a "while" ciklusokat?', 'Mindhárom egyenlő');
+INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 6, 'Melyik programozási nyelv használja a ^for^ és a ^while^ ciklusokat?', 'Mindhárom egyenlő');
 
 -- Kérdések 7. quizhez
 INSERT INTO Kerdes VALUES(seq_kerdes.nextval, 7, 'Melyik sejttypusban található a sejtmag?', 'egyikben sem található');
@@ -248,9 +247,9 @@ INSERT INTO Rosszvalasz VALUES(17, 'Csehország');
 INSERT INTO Rosszvalasz VALUES(17, 'Szlovénia');
 INSERT INTO Rosszvalasz VALUES(17, 'Magyarország');
 
-INSERT INTO Rosszvalasz VALUES(18, 'Kecske');
-INSERT INTO Rosszvalasz VALUES(18, 'Kutya');
-INSERT INTO Rosszvalasz VALUES(18, 'Macska');
+INSERT INTO Rosszvalasz VALUES(18, 'Kecske bőre');
+INSERT INTO Rosszvalasz VALUES(18, 'Kutya bőre');
+INSERT INTO Rosszvalasz VALUES(18, 'Macska bőre');
 
 INSERT INTO Rosszvalasz VALUES(19, 'A tűz istene');
 INSERT INTO Rosszvalasz VALUES(19, 'A villámok istene');
@@ -340,8 +339,8 @@ INSERT INTO Rosszvalasz VALUES(40, 'Model-View-Cache');
 INSERT INTO Rosszvalasz VALUES(40, 'Model-View-Component');
 INSERT INTO Rosszvalasz VALUES(40, 'Model-View-Compiler');
 INSERT INTO Rosszvalasz VALUES(41, 'Nincs különbség');
-INSERT INTO Rosszvalasz VALUES(41, 'Az "==" operátor azonos típusú összehasonlítást végez');
-INSERT INTO Rosszvalasz VALUES(41, 'Az "===" operátor csak a string típust használja');
+INSERT INTO Rosszvalasz VALUES(41, 'Az ^==^ operátor azonos típusú összehasonlítást végez');
+INSERT INTO Rosszvalasz VALUES(41, 'Az ^===^ operátor csak a string típust használja');
 INSERT INTO Rosszvalasz VALUES(42, 'Python');
 INSERT INTO Rosszvalasz VALUES(42, 'C++');
 INSERT INTO Rosszvalasz VALUES(42, 'Java');
@@ -437,7 +436,7 @@ create or replace FUNCTION QuizKeres (
 AS
     ret_cursor SYS_REFCURSOR;
 BEGIN
-    OPEN ret_cursor FOR SELECT QUIZ.QUIZ_NEV
+    OPEN ret_cursor FOR SELECT QUIZ.QUIZ_ID, QUIZ.QUIZ_NEV
                         FROM QUIZ
                                  INNER JOIN kategoria ON QUIZ.quiz_id = kategoria.quiz_id
                         WHERE kategoria.kategoria LIKE p_kategoria;
@@ -492,5 +491,17 @@ create or replace trigger KERDES_DELETE
     for each row
 BEGIN
     DELETE FROM ROSSZVALASZ WHERE ROSSZVALASZ.KERDES_ID = :OLD.KERDES_ID;
+END;
+/
+
+CREATE OR REPLACE TRIGGER FELHASZNALO_DELETE
+    BEFORE DELETE ON FELHASZNALO
+    FOR EACH ROW
+BEGIN
+    DELETE FROM QUIZ WHERE QUIZ_ID =
+        (SELECT QUIZ.QUIZ_ID FROM QUIZ INNER JOIN KESZIT K on QUIZ.QUIZ_ID = K.QUIZ_ID
+    WHERE K.FELHASZNALO_ID = :OLD.FELHASZNALO_ID);
+    DELETE FROM KESZIT WHERE KESZIT.FELHASZNALO_ID = :OLD.FELHASZNALO_ID;
+    DELETE FROM KITOLT WHERE KITOLT.FELHASZNALO_ID = :OLD.FELHASZNALO_ID;
 END;
 /

@@ -38,7 +38,6 @@ if (isset($_POST["fill"])) {
         }
     }
     if ($account !== null) {
-        echo $quiz_id;
         kitolt($account, $pont, intval($quiz_id));
     }
 }
